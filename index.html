@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create and study your own flashcards!">
+    <link rel="stylesheet" href="main.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <title>Flashcards App</title>
+</head>
+
+<body>
+    <main role="main">
+        <h1>Flashcards App</h1>
+        <div class="js-decks-page">
+            <fieldset>
+                <form action="#" class="js-deck-form" autocomplete="off">
+                    <label for="new-deck">Create a Deck: </label>
+                    <input type="text" id="new-deck" class="js-new-deck" placeholder="Enter Deck Name">
+                    <button type="submit">Submit</button>
+                </form>
+            </fieldset>
+            <div class="js-decks-container"></div>
+        </div>
+        <div class="js-cards-page" hidden>
+            <fieldset>
+                <legend>Create a Card</legend>
+                <form action="#" class="js-card-form" autocomplete="off">
+                    <label for="new-card-question">Question: </label>
+                    <input type="text" id="new-card-question" class="js-new-card-question" placeholder="Enter Card Question">
+                    <label for="new-card-answer">Answer: </label>
+                    <input type="text" id="new-card-answer" class="js-new-card-answer" placeholder="Enter Card Answer">
+                    <button type="submit">Submit</button>
+                </form>
+            </fieldset>
+            <div class="js-cards-list"></div>
+            <button type="button" class="js-start-quiz-button">START QUIZ</button>
+        </div>
+        <div class="js-quiz-page" hidden>
+            <div class="js-card-container">
+                <div class="js-card-text"></div>
+                <button type="button" class="js-incorrect-button">INCORRECT</button>
+                <button type="button" class="js-flip-button">FLIP</button>
+                <button type="button" class="js-correct-button">CORRECT</button>
+            </div>
+            <div class="js-score-container" hidden></div>
+        </div>
+    </main>
+    <script src="database.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>
