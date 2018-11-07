@@ -160,8 +160,6 @@ function testDeck() {
         }
         decksDB.push(newDeck);
     });
-
-    console.log(decksDB);
 }
 
 function onLoad() {
