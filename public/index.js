@@ -1,51 +1,137 @@
 let currentCard = 0;
 let currentDeck;
+let deckList;
 let score = 0;
+let token;
+let user;
 
-class Deck {
-    constructor(name) {
-        this.name = name;
-        this.cards = [];
-    }
-
-    addCard(question, answer) {
-        this.cards.push(new Card(question, answer));
-    }
-
-    get length() {
-        return Object.keys(this.cards).length;
-    }
-}
-
-class Card {
-    constructor(question, answer) {
-        this.question = question;
-        this.answer = answer;
-    }
-}
-
-function renderDeckList() {
-    const $decks = $('.js-decks-container');
-    $decks.empty();
-    decksDB.forEach((deck, index) => {
-        $decks.append(`
-            <button type="button" class="js-deck-button" data-index="${index}">${deck.name}</button>
-        `);
+/*          AJAX Calls            */
+function setHeader() {
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            if (localStorage.token) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.token);
+            }
+        }
     });
 }
 
-function renderCardsPage() {
+function postLogin(username, password) {
+    const data = JSON.stringify({ username: username, password: password });
+    $.ajax({
+        url: './api/auth/login',
+        type: 'POST',
+        data: data,
+        contentType: 'application/json',
+        success: function (data) {
+            localStorage.token = data.authToken;
+            showPage('decks');
+        }
+    });
+}
+
+function getUser() {
+    $.ajax({
+        url: './userdata',
+        type: 'GET',
+        success: function (data) {
+            user = data.user;
+        }
+    })
+}
+
+function getDeckList() {
+    $.getJSON('./decks', renderDeckList);
+}
+
+function getDeckByID(id = currentDeck._id) {
+    $.getJSON(`./decks/${id}`, function (data) {
+        currentDeck = data;
+        showPage('cards');
+    });
+}
+
+function postNewDeck(deckTitle) {
+    const data = JSON.stringify({ uid: user.id, title: deckTitle });
+    $.ajax({
+        url: './decks',
+        type: 'POST',
+        data: data,
+        contentType: 'application/json',
+        success: getDeckList
+    });
+}
+
+function putCard(question, answer) {
+    const cardData = JSON.stringify({
+        id: currentDeck._id,
+        question: question,
+        answer: answer
+    });
+    $.ajax({
+        url: './decks',
+        type: 'PUT',
+        data: cardData,
+        contentType: 'application/json',
+        success: getDeckByID
+    });
+}
+
+/*          Page Methods            */
+
+function showPage(inputPage) {
+    const pages = ['login', 'decks', 'cards', 'quiz', 'score'];
+    //Compare input page to available pages, show input page, hide the rest
+    pages.forEach(page => {
+        if (inputPage === page) {
+            $(`.js-${page}-page`).show();
+        } else $(`.js-${page}-page`).hide();
+    })
+    renderPage(inputPage);
+}
+
+function renderPage(inputPage) {
+    switch (inputPage) {
+        case 'decks':
+            getDeckList();
+            break;
+        case 'cards':
+            renderCardsPage();
+            break;
+    }
+}
+
+function renderDeckList(data) {
+    deckList = data.decks;
+    const $decks = $('.js-decks-container');
+    $decks.empty();
+    deckList.forEach((deck, index) => {
+        $decks.append(`
+            <button type="button" class="js-deck-button" data-index="${index}">${deck.title}</button>
+        `);
+    });
+    $('.js-decks-page').show();
+    watchDeckSelection();
+}
+
+function renderCardsPage(data = currentDeck) {
+    const cardList = data.cards;
     const $list = $('.js-cards-list');
     $list.empty();
-    currentDeck.cards.forEach(card => {
-        $list.append(`
+    if (!cardList.empty) {
+        cardList.forEach(card => {
+            $list.append(`
         <div class="row">
             <div class="column">${card.question}</div>
             <div class="column">${card.answer}</div>
         </div>
     `);
-    });
+        });
+    }
 }
+
+
+/*          Deck Methods            */
 
 function renderCard(currentCard = 0) {
     const card = currentDeck.cards[currentCard];
@@ -62,7 +148,7 @@ function flipCard() {
 
 function changeCard() {
     currentCard++;
-    if (currentCard != currentDeck.length)
+    if (currentCard != currentDeck.cards.length)
         renderCard(currentCard);
     else {
         showScore();
@@ -72,20 +158,37 @@ function changeCard() {
 }
 
 function showScore() {
-    $('.js-card-container').toggle();
+    showPage('score');
     $('.js-score-container').html(`
-        <div class="score">Your Score: ${score}/${currentDeck.length}</div>
+        <div class="score">Your Score: ${score}/${currentDeck.cards.length}</div>
         <button type="button" class="js-reset-button">RESET</button>
-    `).toggle();
+    `);
+}
+
+/*          Event Callbacks            */
+
+function watchLogin() {
+    $('.js-login-form').submit(e => {
+        e.preventDefault();
+        $this = $(e.currentTarget);
+        const username = $this.find('.js-login-username').val();
+        const password = $this.find('.js-login-password').val();
+        postLogin(username, password);
+    });
+}
+
+function watchlogOut() {
+    $('.js-logout-button').click(e => {
+        showPage('login');
+        localStorage.clear();
+    });
 }
 
 function watchDeckSelection() {
     $('.js-decks-container button').click(function (e) {
         const deck = e.currentTarget.dataset.index;
-        currentDeck = decksDB[deck];
-        $('.js-decks-page').toggle();
-        $('.js-cards-page').toggle();
-        renderCardsPage();
+        currentDeck = deckList[deck];
+        showPage('cards');
     });
 }
 
@@ -110,24 +213,15 @@ function watchReset() {
     $('.js-reset-button').click(function () {
         currentCard = 0;
         score = 0;
-        $('.js-score-container').toggle();
-        $('.js-card-container').toggle();
-        $('.js-quiz-page').toggle();
-        $('.js-cards-page').toggle();
-        renderCard();
+        showPage('cards');
     });
 }
 
 function watchNewDeck() {
     $('.js-deck-form').submit(e => {
         e.preventDefault();
-        const deckName = $(e.currentTarget).find('.js-new-deck').val();
-        const newDeck = new Deck(deckName);
-        newDeck.addCard("New Card Question", "New Card Answer");
-        decksDB.push(newDeck);
-        renderDeckList();
-        watchDeckSelection();
-
+        const deckTitle = $(e.currentTarget).find('.js-new-deck').val();
+        postNewDeck(deckTitle);
     });
 }
 
@@ -137,41 +231,40 @@ function watchNewCard() {
         const cardQuestion = $this.find('.js-new-card-question').val();
         const cardAnswer = $this.find('.js-new-card-answer').val();
         e.preventDefault();
-        currentDeck.addCard(cardQuestion, cardAnswer);
-        renderCardsPage();
+        putCard(cardQuestion, cardAnswer);
     });
 }
 
 function watchStartQuiz() {
     $('.js-start-quiz-button').click(function () {
-        $('.js-cards-page').toggle();
-        $('.js-quiz-page').toggle();
+        showPage('quiz');
         renderCard();
     });
 }
 
-function testDeck() {
-    cardsDB.forEach((deck) => {
-        const questions = Object.keys(deck.questions);
-        const answers = Object.values(deck.questions);
-        newDeck = new Deck(deck.title);
-        for (var i = 0; i < questions.length; i++) {
-            newDeck.addCard(questions[i], answers[i]);
-        }
-        decksDB.push(newDeck);
+function watchDecksPage() {
+    $('.js-decks-button').click(e => {
+        showPage('decks');
     });
 }
 
-function onLoad() {
-    testDeck();
+/*          On Load            */
 
-    renderDeckList();
+function onLoad() {
+    setHeader();
+    if (localStorage.token) {
+        getUser();
+        showPage('decks');
+    }
+    watchLogin();
     watchDeckSelection();
     watchFlip();
     watchAnswer();
     watchNewDeck();
     watchNewCard();
+    watchDecksPage();
     watchStartQuiz();
+    watchlogOut();
 }
 
 $(onLoad);

@@ -14,7 +14,21 @@
 <body>
     <main role="main">
         <h1>Flashcards App</h1>
-        <div class="js-decks-page">
+        <div class="js-login-page">
+            <fieldset>
+                <legend>Login</legend>
+                <form action="#" class="js-login-form" autocomplete="off">
+                    <label for="login-username">Username: </label>
+                    <input type="text" id="login-username" class="js-login-username" placeholder="Enter Username"
+                        required value="JNighs">
+                    <label for="login-password">Password: </label>
+                    <input type="text" id="login-password" class="js-login-password" placeholder="Enter Password"
+                        required value="password123">
+                    <button type="submit">Submit</button>
+                </form>
+            </fieldset>
+        </div>
+        <div class="js-decks-page" hidden>
             <fieldset>
                 <form action="#" class="js-deck-form" autocomplete="off">
                     <label for="new-deck">Create a Deck: </label>
@@ -29,14 +43,17 @@
                 <legend>Create a Card</legend>
                 <form action="#" class="js-card-form" autocomplete="off">
                     <label for="new-card-question">Question: </label>
-                    <input type="text" id="new-card-question" class="js-new-card-question" placeholder="Enter Card Question">
+                    <input type="text" id="new-card-question" class="js-new-card-question" placeholder="Enter Card Question"
+                        required>
                     <label for="new-card-answer">Answer: </label>
-                    <input type="text" id="new-card-answer" class="js-new-card-answer" placeholder="Enter Card Answer">
+                    <input type="text" id="new-card-answer" class="js-new-card-answer" placeholder="Enter Card Answer"
+                        required>
                     <button type="submit">Submit</button>
                 </form>
             </fieldset>
             <div class="js-cards-list"></div>
-            <button type="button" class="js-start-quiz-button">START QUIZ</button>
+            <button type="button" class="js-start-quiz-button">START QUIZ</button><br>
+            <button type="button" class="js-decks-button">RETURN TO DECKS</button>
         </div>
         <div class="js-quiz-page" hidden>
             <div class="js-card-container">
@@ -45,8 +62,11 @@
                 <button type="button" class="js-flip-button">FLIP</button>
                 <button type="button" class="js-correct-button">CORRECT</button>
             </div>
-            <div class="js-score-container" hidden></div>
         </div>
+        <div class="js-score-page" hidden>
+            <div class="js-score-container"></div>
+        </div>
+        <button type="button" class="js-logout-button">Logout</button>
     </main>
     <script src="database.js"></script>
     <script src="index.js"></script>
