@@ -1,10 +1,48 @@
+let s, deck, user;
+const App = {
+    settings: {
+
+    },
+    deckSettings: {
+        deckList: null,
+        currentDeck: null,
+        card: 0,
+        score: 0,
+    },
+    userSettings: {
+        token: null,
+        obj: null
+    },
+
+    init: function () {
+        s = this.settings;
+        deck = this.deckSettings;
+        user = this.userSettings;
+        this.bindUIActions();
+    },
+
+    bindUIActions: function () {
+        $('.js-account-form').submit(e => {
+            e.preventDefault();
+            App.createAccount(e);
+        });
+    },
+
+    createAccount: function (e) {
+        $this = $(e.currentTarget);
+        const username = $this.find('.js-account-username').val();
+        const password = $this.find('.js-account-password').val();
+        postCreateAccount(username, password);
+    }
+};
+/*
 let currentCard = 0;
 let currentDeck;
 let deckList;
 let score = 0;
 let token;
 let user;
-
+*/
 /*          AJAX Calls            */
 function setHeader() {
     $.ajaxSetup({
@@ -12,6 +50,19 @@ function setHeader() {
             if (localStorage.token) {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + localStorage.token);
             }
+        }
+    });
+}
+
+function postCreateAccount(username, password) {
+    const data = JSON.stringify({ username: username, password: password });
+    $.ajax({
+        url: './api/users/',
+        type: 'POST',
+        data: data,
+        contentType: 'application/json',
+        success: function () {
+            postLogin(username, password)
         }
     });
 }
@@ -167,6 +218,16 @@ function showScore() {
 
 /*          Event Callbacks            */
 
+function watchCreateAccount() {
+    $('.js-account-form').submit(e => {
+        e.preventDefault();
+        $this = $(e.currentTarget);
+        const username = $this.find('.js-account-username').val();
+        const password = $this.find('.js-account-password').val();
+        postCreateAccount(username, password);
+    });
+}
+
 function watchLogin() {
     $('.js-login-form').submit(e => {
         e.preventDefault();
@@ -256,6 +317,7 @@ function onLoad() {
         getUser();
         showPage('decks');
     }
+    watchCreateAccount();
     watchLogin();
     watchDeckSelection();
     watchFlip();
