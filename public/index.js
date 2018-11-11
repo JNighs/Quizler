@@ -12,14 +12,11 @@ const Ajax = {
     },
     createAccount(username, password) {
         const data = JSON.stringify({ username: username, password: password });
-        $.ajax({
+        return $.ajax({
             url: './api/users/',
             type: 'POST',
             data: data,
-            contentType: 'application/json',
-            success: function () {
-                this.login(username, password)
-            }
+            contentType: 'application/json'
         });
     },
     login(username, password) {
@@ -41,23 +38,18 @@ const Ajax = {
         })
     },
     deckList() {
-        $.getJSON('./decks', App.render.decks);
+        return $.getJSON('./decks');
     },
     deckByID(id) {
-        $.getJSON(`./decks/${id}`, function (data) {
-            Deck.currentDeck = data;
-            App.showPage('cards');
-        });
+        return $.getJSON(`./decks/${id}`);
     },
     createDeck(title) {
         const data = JSON.stringify({ uid: App.user.id, title: title });
-        $.ajax({
+        return $.ajax({
             url: './decks',
             type: 'POST',
             data: data,
             contentType: 'application/json',
-            //Reload and render deck list
-            success: this.deckList
         });
     },
     createCard(question, answer) {
@@ -66,12 +58,11 @@ const Ajax = {
             question: question,
             answer: answer
         });
-        $.ajax({
+        return $.ajax({
             url: './decks',
             type: 'PUT',
             data: cardData,
-            contentType: 'application/json',
-            success: function () { Ajax.deckByID(deck.currentDeck._id); }
+            contentType: 'application/json'
         });
     }
 }
@@ -87,7 +78,8 @@ const App = {
         user = this.userSettings;
         this.bindUIActions();
         this.loginCheck();
-        if (user.isLoggedIn) { this.showPage('decks');; }
+        //TODO - Clean up login logic
+        if (user.isLoggedIn) { this.showPage('decks'); }
     },
 
     bindUIActions: function () {
@@ -98,7 +90,7 @@ const App = {
 
         $('.js-login-form').submit(e => {
             e.preventDefault();
-            App.login(e);
+            App.formLogin(e);
         });
 
         $('.js-logout-button').click(e => {
@@ -126,7 +118,7 @@ const App = {
             Deck.createCard(e);
         });
     },
-
+    //If user is already logged in, set header and grab user object
     loginCheck: function () {
         if (localStorage.token) {
             user.isLoggedIn = true;
@@ -134,36 +126,45 @@ const App = {
             Ajax.userData();
         }
     },
-
+    //Create account then log into it
     createAccount: function (e) {
         $this = $(e.currentTarget);
         const username = $this.find('.js-account-username').val();
         const password = $this.find('.js-account-password').val();
-        Ajax.createAccount(username, password);
+        Ajax.createAccount(username, password)
+            .then(() => {
+                App.login(username, password)
+            });
     },
-
-    login: function (e) {
+    //Login and show user's deck page
+    login: function (username, password) {
+        Ajax.login(username, password)
+            .then(data => {
+                //TODO - Clean up login logic
+                localStorage.token = data.authToken;
+                App.loginCheck();
+                App.showPage('decks');
+            });
+    },
+    //Login from login form
+    formLogin: function (e) {
         $this = $(e.currentTarget);
         const username = $this.find('.js-login-username').val();
         const password = $this.find('.js-login-password').val();
-        Ajax.login(username, password).then(data => {
-            localStorage.token = data.authToken;
-            App.loginCheck();
-            App.showPage('decks');
-        });
+        App.login(username, password);
     },
 
     logout: function () {
         localStorage.clear();
         App.showPage('login');
     },
-
+    //Go to selected Deck's cards page
     selectDeck: function (e) {
         const selected = e.currentTarget.dataset.index;
         deck.currentDeck = deck.deckList[selected];
         App.showPage('cards');
     },
-
+    //Shows input page, hides rest
     showPage: function (inputPage) {
         const pages = ['login', 'decks', 'cards', 'quiz', 'score'];
         //Compare input page to available pages, show input page, hide the rest
@@ -179,7 +180,7 @@ const App = {
         page: function (inputPage) {
             switch (inputPage) {
                 case 'decks':
-                    Ajax.deckList();
+                    Ajax.deckList().then(App.render.decks);
                     break;
                 case 'cards':
                     App.render.cards();
@@ -227,13 +228,26 @@ const Deck = {
     },
     createDeck: function (e) {
         const deckTitle = $(e.currentTarget).find('.js-new-deck').val();
-        Ajax.createDeck(deckTitle);
+        //Create deck then reload/render decks page
+        Ajax.createDeck(deckTitle)
+            .then(Ajax.deckList)
+            .then(App.render.decks);
     },
     createCard: function (e) {
         const $this = $(e.currentTarget);
         const cardQuestion = $this.find('.js-new-card-question').val();
         const cardAnswer = $this.find('.js-new-card-answer').val();
-        Ajax.createCard(cardQuestion, cardAnswer);
+        //Add card to deck then reload cards page
+        Ajax.createCard(cardQuestion, cardAnswer)
+            .then(() => {
+                //Retrieve updated deck
+                return Ajax.deckByID(deck.currentDeck._id);
+            })
+            .then((data) => {
+                //Show updated cards
+                deck.currentDeck = data;
+                App.showPage('cards');
+            });
     }
 }
 
@@ -249,6 +263,11 @@ const Quiz = {
     },
 
     bindUIActions: function () {
+        $('.js-start-quiz-button').click(function () {
+            App.showPage('quiz');
+            Quiz.renderCard();
+        });
+
         $('.js-reset-button').click(function () {
             Quiz.resetQuiz();
         });
@@ -264,11 +283,6 @@ const Quiz = {
 
         $('.js-incorrect-button').click(function () {
             Quiz.changeCard();
-        });
-
-        $('.js-start-quiz-button').click(function () {
-            App.showPage('quiz');
-            Quiz.renderCard();
         });
     },
 
@@ -308,8 +322,6 @@ const Quiz = {
         App.showPage('cards');
     }
 }
-
-/*          On Load            */
 
 function onLoad() {
     App.init();

@@ -81,8 +81,6 @@ app.use('*', (req, res) => {
     return res.status(404).json({ message: 'Not Found' });
 });
 
-
-
 /*   Server Start and Close   */
 
 let server;
