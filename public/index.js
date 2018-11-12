@@ -52,16 +52,56 @@ const Ajax = {
             contentType: 'application/json',
         });
     },
-    createCard(question, answer) {
+    createCard(_id, question, answer) {
         const cardData = JSON.stringify({
-            id: deck.currentDeck._id,
-            question: question,
-            answer: answer
+            id: _id,
+            card: {
+                question: question,
+                answer: answer
+            }
         });
         return $.ajax({
-            url: './decks',
+            url: `./decks/${_id}`,
             type: 'PUT',
             data: cardData,
+            contentType: 'application/json'
+        });
+    },
+    //TODO - Organize PUT request
+    updateDeck(_id, _title) {
+        const updateData = JSON.stringify({
+            id: _id,
+            title: _title
+        });
+        return $.ajax({
+            url: `./decks/${_id}`,
+            type: 'PUT',
+            data: updateData,
+            contentType: 'application/json'
+        });
+    },
+    updateCard(deckID, cardID, cardSide, newText) {
+        const updateData = {
+            cardSide: cardSide,
+            text: newText
+        }
+        return $.ajax({
+            url: `./decks/${deckID}/cards/${cardID}`,
+            type: 'PUT',
+            data: JSON.stringify(updateData),
+            contentType: 'application/json'
+        });
+    },
+    deleteDeck(id) {
+        return $.ajax({
+            url: `./decks/${id}`,
+            type: 'DELETE'
+        });
+    },
+    deleteCard(deckID, cardID) {
+        return $.ajax({
+            url: `./decks/${deckID}/cards/${cardID}`,
+            type: 'DELETE',
             contentType: 'application/json'
         });
     }
@@ -102,20 +142,8 @@ const App = {
         });
 
         //Select deck and view its cards
-        $('.js-decks-container').on("click", "button", function (e) {
+        $('.js-decks-container').on("click", ".js-deck-select-button", function (e) {
             App.selectDeck(e);
-        });
-
-        //Create new deck
-        $('.js-deck-form').submit(e => {
-            e.preventDefault();
-            Deck.createDeck(e);
-        });
-
-        //Create new card
-        $('.js-card-form').submit(e => {
-            e.preventDefault();
-            Deck.createCard(e);
         });
     },
     //If user is already logged in, set header and grab user object
@@ -194,7 +222,12 @@ const App = {
             $decks.empty();
             deck.deckList.forEach((deck, index) => {
                 $decks.append(`
-                    <button type="button" class="js-deck-button" data-index="${index}">${deck.title}</button>
+                    <div class="deck-container">
+                        <h2>${deck.title}</h2>
+                        <button type="button" class="js-deck-select-button" data-index="${index}">Select</button>
+                        <button type="button" class="js-deck-edit-button" data-index="${index}">Edit</button>
+                        <button type="button" class="js-deck-delete-button" data-index="${index}">Delete</button>
+                    </div>
                 `);
             });
             //Show page
@@ -205,12 +238,21 @@ const App = {
             const $list = $('.js-cards-list');
             $list.empty();
             if (!cardList.empty) {
-                cardList.forEach(card => {
+                cardList.forEach((card, index) => {
                     $list.append(`
-                <div class="row">
-                    <div class="column">${card.question}</div>
-                    <div class="column">${card.answer}</div>
-                </div>
+                    <div class="js-card-container">
+                        <div class="row">
+                            <div class="column">
+                                <h3>${card.question}</h3>
+                                <button type="button" class="js-card-edit-question-button" data-index="${index}">Edit</button>
+                            </div>
+                            <div class="column">
+                                <h3>${card.answer}</h3>
+                                <button type="button" class="js-card-edit-answer-button" data-index="${index}">Edit</button>
+                            </div>
+                        </div>
+                        <button type="button" class="js-card-delete-button" data-index="${index}">Delete</button>
+                    </div>
             `);
                 });
             }
@@ -225,20 +267,52 @@ const Deck = {
     },
     init: function () {
         deck = this.settings;
+        this.bindUIActions();
+    },
+    bindUIActions: function () {
+        //Create new deck
+        $('.js-deck-form').submit(e => {
+            e.preventDefault();
+            Deck.createDeck(e);
+        });
+        //Create new card
+        $('.js-card-form').submit(e => {
+            e.preventDefault();
+            Deck.createCard(e);
+        });
+        //Edit deck
+        $('.js-decks-container').on("click", ".js-deck-edit-button", function (e) {
+            Deck.editDeck(e);
+        });
+        //Edit card question
+        $('.js-cards-list').on("click", ".js-card-edit-question-button", function (e) {
+            Deck.editCard(e, "question");
+        });
+        //Edit card answer
+        $('.js-cards-list').on("click", ".js-card-edit-answer-button", function (e) {
+            Deck.editCard(e, "answer");
+        });
+        //Delete deck
+        $('.js-decks-container').on("click", ".js-deck-delete-button", function (e) {
+            Deck.deleteDeck(e);
+        });
+        //Delete card
+        $('.js-cards-list').on("click", ".js-card-delete-button", function (e) {
+            Deck.deleteCard(e);
+        });
     },
     createDeck: function (e) {
         const deckTitle = $(e.currentTarget).find('.js-new-deck').val();
-        //Create deck then reload/render decks page
+        //Create deck then reload decks page
         Ajax.createDeck(deckTitle)
-            .then(Ajax.deckList)
-            .then(App.render.decks);
+            .then(App.showPage('decks'));
     },
     createCard: function (e) {
         const $this = $(e.currentTarget);
         const cardQuestion = $this.find('.js-new-card-question').val();
         const cardAnswer = $this.find('.js-new-card-answer').val();
         //Add card to deck then reload cards page
-        Ajax.createCard(cardQuestion, cardAnswer)
+        Ajax.createCard(deck.currentDeck._id, cardQuestion, cardAnswer)
             .then(() => {
                 //Retrieve updated deck
                 return Ajax.deckByID(deck.currentDeck._id);
@@ -248,7 +322,66 @@ const Deck = {
                 deck.currentDeck = data;
                 App.showPage('cards');
             });
-    }
+    },
+    editDeck: function (e) {
+        const selected = e.currentTarget.dataset.index;
+        const deckID = deck.deckList[selected]._id;
+        const $deckTitle = $(e.currentTarget).siblings('h2');
+        const currentTitle = $deckTitle.text();
+
+        //Make title editable text, focus it
+        $deckTitle.prop('contentEditable', true).focus()
+            //On deselecting text, write new name into database
+            .on('blur', function () {
+                const newTitle = $deckTitle.text()
+                if (newTitle !== currentTitle) {
+                    Ajax.updateDeck(deckID, newTitle);
+                }
+                $deckTitle.prop('contentEditable', false);
+            });
+    },
+    editCard: function (e, cardSide) {
+        const index = e.currentTarget.dataset.index;
+        const _deck = deck.currentDeck;
+        const _card = _deck.cards[index];
+        const $cardText = $(e.currentTarget).siblings('h3');
+        let currentText;
+        if (cardSide === "question") {
+            currentText = _card.question;
+        } else { currentText = _card.answer };
+
+        $cardText.prop('contentEditable', true).focus()
+            //On deselecting text, write new name into database
+            .on('blur', function () {
+                const newText = $cardText.text()
+                if (newText !== currentText) {
+                    console.log(newText);
+                    Ajax.updateCard(_deck._id, _card._id, cardSide, newText)
+                }
+                $cardText.prop('contentEditable', false);
+            });
+
+
+    },
+    deleteDeck: function (e) {
+        const index = e.currentTarget.dataset.index;
+        const _deck = deck.deckList[index];
+        Ajax.deleteDeck(_deck._id)
+            .then(App.showPage('decks'));
+    },
+    deleteCard: function (e) {
+        const index = e.currentTarget.dataset.index;
+        const _deck = deck.currentDeck;
+        const _card = _deck.cards[index];
+        Ajax.deleteCard(_deck._id, _card._id)
+            .then(() => {
+                return Ajax.deckByID(_deck._id);
+            })
+            .then(updatedDeck => {
+                deck.currentDeck = updatedDeck;
+                App.showPage('cards');
+            });
+    },
 }
 
 const Quiz = {

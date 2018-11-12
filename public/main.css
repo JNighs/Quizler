@@ -1,3 +1,15 @@
 body {
     text-align: center;
 }
+
+.deck-container {
+    border: 1px black solid;
+}
+
+.row {
+    display: flex;
+}
+
+.column {
+    flex: 50%;
+}
