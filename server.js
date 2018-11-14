@@ -16,7 +16,7 @@ const { router: decksRouter } = require('./decks');
 
 app.use(express.json());
 //app.use(morgan('common'));
-app.use(express.static("public"));
+app.use(express.static(__dirname + '/public'));
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 app.use('/decks/', decksRouter);
@@ -28,7 +28,7 @@ const jwtAuth = passport.authenticate('jwt', { session: false });
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/index.html");
-  });
+});
 
 app.get("/userdata", jwtAuth, (req, res) => {
     res.json({ user: req.user });
@@ -65,17 +65,17 @@ function runServer(databaseUrl, port = PORT) {
 
 function closeServer() {
     return mongoose.disconnect().then(() => {
-      return new Promise((resolve, reject) => {
-        console.log('Closing server');
-        server.close(err => {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
+        return new Promise((resolve, reject) => {
+            console.log('Closing server');
+            server.close(err => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            });
         });
-      });
     });
-  }
+}
 
 if (require.main === module) {
     runServer(DATABASE_URL).catch(err => console.error(err));
