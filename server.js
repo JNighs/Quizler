@@ -16,7 +16,7 @@ const { router: decksRouter } = require('./decks');
 
 app.use(express.json());
 //app.use(morgan('common'));
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static("public"));
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 app.use('/decks/', decksRouter);
@@ -25,6 +25,10 @@ passport.use(localStrategy);
 passport.use(jwtStrategy);
 
 const jwtAuth = passport.authenticate('jwt', { session: false });
+
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/public/index.html");
+  });
 
 app.get("/userdata", jwtAuth, (req, res) => {
     res.json({ user: req.user });
