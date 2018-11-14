@@ -2,5 +2,11 @@ language: node_js
 node_js: node
 services:
 - mongodb
-env: 
-  -JWT_SECRET=JWT_SECRET
+env: "-JWT_SECRET=JWT_SECRET"
+deploy:
+  provider: heroku
+  api_key:
+    secure: CFWVGL5FchLhge12FOJ+3xWuhVaOBBslhd0JYVZzGOnq9GJ3Yek2yuxN3toeqttYZhKJnUN+8DuYgFk4Di4ygZ5SVYPw0iLf0wDSKZynvTzpx3+5uEKJhDCU/7ykOVMjZCOWsZy1JVCjSzviBM67Rw5lJ6bgtFLU7lzxN9R7I2WJ7rMIvqobhv4zuvcJplULoQqXayLfWKw2E3nEDdtqhXVIMMdYPFffTH00iF+RKHveXh50DB5NDJCw/8kYl55DcUueA4dWPRJ5WUWJEwLqHnR3wlSmd2/sfaClmuGCAxOYy1UJs0zxz6HZMqky4YsN54c1w1jHVmRQIMK2A/lGYoXEJ1Tui+LqNuU13nNEzf6mB1WxwxESsvwg/uALxlM3FWxAUVA+bUqIlNvZYEcYVzRqHLr82ybP+b8Gn6phKE+PXUJF2/SDzmRUkOB4hcwV3mH/RTsywjugVZv7s6hojXzWxBKI/dJh3Pe2ZgHIdJH711VIdbt5UaIMEYvBoclRw6h3btJDwE/F60V2JA6t98/3GDCGgcGT1WGTugDe0IYg02rYuxHLqJoPTA8/AMZtknCFcei6llzSTtgICkKkD3rD9SW1oKUuox/fFSZmZiFRX7sLi+NpA/mozsZ/u7Wj99xcz5QP/p42C7zSL7oZja06KjE3xwCNOuQIXMz2RzA=
+  app: jnighs-node-capstone
+  on:
+    repo: JNighs/node-capstone
