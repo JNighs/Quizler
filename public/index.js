@@ -54,15 +54,12 @@ const Ajax = {
     },
     createCard(_id, question, answer) {
         const cardData = JSON.stringify({
-            id: _id,
-            card: {
-                question: question,
-                answer: answer
-            }
+            question: question,
+            answer: answer
         });
         return $.ajax({
             url: `./decks/${_id}`,
-            type: 'PUT',
+            type: 'POST',
             data: cardData,
             contentType: 'application/json'
         });

@@ -60,7 +60,6 @@ router.post("/:id", jwtAuth, (req, res) => {
         .then(deck => res.status(204).end())
         .catch(err => res.status(500).json({ message: "Internal server error" }));
 });
-
 //Update deck (new title)
 router.put("/:id", jwtAuth, (req, res) => {
     if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
@@ -80,7 +79,6 @@ router.put("/:id", jwtAuth, (req, res) => {
         .then(deck => res.status(204).end())
         .catch(err => res.status(500).json({ message: "Internal server error" }));
 });
-
 //Update card (question or answer)
 router.put("/:id/cards/:cardID", jwtAuth, (req, res) => {
     //updates either the question or answer depending on req.body.cardSide
