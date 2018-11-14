@@ -217,7 +217,7 @@ const App = {
         },
         decks: function (data) {
             const $decks = $('.js-decks-container');
-            deck.deckList = data.decks;
+            deck.deckList = data;
             //Populate decks list
             $decks.empty();
             deck.deckList.forEach((deck, index) => {

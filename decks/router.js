@@ -11,9 +11,7 @@ const jwtAuth = passport.authenticate('jwt', { session: false });
 router.get("/", jwtAuth, (req, res) => {
     Deck.find({ "uid": req.user.id }).limit(10)
         .then(decks => {
-            res.json({
-                decks: decks
-            });
+            res.json(decks);
         })
         .catch(err => {
             console.error(err);
@@ -36,10 +34,16 @@ router.post("/", jwtAuth, (req, res) => {
         console.error(message);
         return res.status(400).send(message);
     }
+    //Create deck with cards already in it (used for testing mostly)
+    let cards = [];
+    if ("cards" in req.body) {
+        cards = req.body.cards
+    }
 
     Deck.create({
         uid: req.body.uid,
-        title: req.body.title
+        title: req.body.title,
+        cards: cards
     })
         .then(deck => res.status(201).json(deck))
         .catch(err => {
@@ -47,7 +51,17 @@ router.post("/", jwtAuth, (req, res) => {
             res.status(500).json({ message: "Internal server error" });
         });
 });
-//Update deck (new title or new card)
+//Create card
+router.post("/:id", jwtAuth, (req, res) => {
+    //TODO - Verify there's a question and answer in the res.body
+    const update = {};
+    update['$push'] = { "cards": req.body };
+    Deck.findByIdAndUpdate(req.params.id, update)
+        .then(deck => res.status(204).end())
+        .catch(err => res.status(500).json({ message: "Internal server error" }));
+});
+
+//Update deck (new title)
 router.put("/:id", jwtAuth, (req, res) => {
     if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
         const message =
@@ -56,18 +70,17 @@ router.put("/:id", jwtAuth, (req, res) => {
         console.error(message);
         return res.status(400).json({ message: message });
     }
-    const toUpdate = {};
+    //TODO - verify there's a title in the res.body
+    const update = {};
     if ('title' in req.body) {
-        toUpdate['$set'] = { "title": req.body.title };
+        update['$set'] = { "title": req.body.title };
     }
 
-    if ('card' in req.body) {
-        toUpdate['$push'] = { "cards": req.body.card };
-    }
-    Deck.findByIdAndUpdate(req.body.id, toUpdate)
+    Deck.findByIdAndUpdate(req.body.id, update)
         .then(deck => res.status(204).end())
         .catch(err => res.status(500).json({ message: "Internal server error" }));
 });
+
 //Update card (question or answer)
 router.put("/:id/cards/:cardID", jwtAuth, (req, res) => {
     //updates either the question or answer depending on req.body.cardSide

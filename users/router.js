@@ -84,14 +84,14 @@ router.post('/', (req, res) => {
     lastName = lastName.trim();
 
     return User.find({ username })
-        .count()
+        .countDocuments()
         .then(count => {
             if (count > 0) {
                 return Promise.reject({
                     code: 422,
                     reason: 'ValidationError',
                     message: 'Username already taken',
-                    locaiton: 'username'
+                    location: 'username'
                 });
             }
             return User.hashPassword(password);
