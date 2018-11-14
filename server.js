@@ -16,7 +16,7 @@ const { router: decksRouter } = require('./decks');
 
 app.use(express.json());
 //app.use(morgan('common'));
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/users/', usersRouter);
 app.use('/api/auth/', authRouter);
 app.use('/decks/', decksRouter);
