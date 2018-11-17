@@ -17,11 +17,14 @@
         <div class="js-login-page">
             <fieldset>
                 <legend>Create Account</legend>
+                <span class="js-create-account-error"></span>
                 <form action="#" class="js-account-form" autocomplete="off">
                     <label for="account-username">Username: </label>
-                    <input type="text" id="account-username" class="js-account-username" placeholder="Enter Username">
+                    <input type="text" id="account-username" class="js-account-username" placeholder="Enter Username"><br>
                     <label for="account-password">Password: </label>
-                    <input type="text" id="account-password" class="js-account-password" placeholder="Enter Password">
+                    <input type="password" id="account-password" class="js-account-password" placeholder="Enter Password"><br>
+                    <label for="account-verify">Verify Password: </label>
+                    <input type="password" id="account-verify" class="js-account-verify" placeholder="Verify Password"><br>
                     <button type="submit">Submit</button>
                 </form>
             </fieldset>
@@ -30,10 +33,10 @@
                 <form action="#" class="js-login-form" autocomplete="off">
                     <label for="login-username">Username: </label>
                     <input type="text" id="login-username" class="js-login-username" placeholder="Enter Username"
-                        required value="JNighs">
+                        required><br>
                     <label for="login-password">Password: </label>
-                    <input type="text" id="login-password" class="js-login-password" placeholder="Enter Password"
-                        required value="password123">
+                    <input type="password" id="login-password" class="js-login-password" placeholder="Enter Password"
+                        required><br>
                     <button type="submit">Submit</button>
                 </form>
             </fieldset>

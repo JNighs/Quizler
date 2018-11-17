@@ -156,10 +156,18 @@ const App = {
         $this = $(e.currentTarget);
         const username = $this.find('.js-account-username').val();
         const password = $this.find('.js-account-password').val();
-        Ajax.createAccount(username, password)
-            .then(() => {
-                App.login(username, password)
-            });
+        const verify = $this.find('.js-account-verify').val();
+        //Check if password and verification are the same
+        if (password !== verify) {
+            $this.find('.js-account-password').val('');
+            $this.find('.js-account-verify').val('');
+            $('.js-create-account-error').text('Passwords do not match.');
+        } else {
+            Ajax.createAccount(username, password)
+                .then(() => {
+                    App.login(username, password)
+                });
+        }
     },
     //Login and show user's deck page
     login: function (username, password) {
