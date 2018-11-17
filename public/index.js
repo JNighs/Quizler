@@ -123,12 +123,7 @@ const App = {
     bindUIActions: function () {
         $('.js-account-form').submit(e => {
             e.preventDefault();
-            App.createAccount(e);
-        });
-
-        $('.js-login-form').submit(e => {
-            e.preventDefault();
-            App.formLogin(e);
+            App.routeAccountForm(e);
         });
 
         $('.js-logout-button').click(e => {
@@ -143,6 +138,55 @@ const App = {
         $('.js-decks-container').on("click", ".js-deck-select-button", function (e) {
             App.selectDeck(e);
         });
+
+        //Changed inputs required depending on account form selection
+        $('input[type=radio][name=rg]').change(function (e) {
+            App.accountFormRequiredFields(e);
+        });
+
+    },
+    routeAccountForm: function (e) {
+        //Find active search form
+        const formType = $('input:checked').attr('id');
+        if (formType === 'login') {
+            console.log('Login checked');
+            App.formLogin(e);
+        } else if (formType === 'create') {
+            console.log('Create checked');
+            App.createAccount(e);
+        }
+        //Clear password text fields
+        $('input').not('.js-account-username').val("");
+    },
+    accountFormRequiredFields: function (e) {
+        _this = e.currentTarget;
+        //Remove ability to tab to all forms
+        $('.login, .create').each(function () { $(this).prop('tabindex', -1) });
+        //Remove all previous required inputs
+        $('input[required]').each(function () { $(this).prop('required', false) });
+        //Remove binding from password requirements
+        $('.js-account-password').off();
+        //Add in required inputs based on form
+        if (_this.id == 'login') {
+            $(".js-account-username").prop('required', true);
+            $(".js-account-password").prop('required', true);
+            $('.login').each(function () { $(this).prop('tabindex', 0) });
+        }
+        else if (_this.id == 'create') {
+            $(".js-account-username").prop('required', true);
+            $(".js-account-password").prop('required', true);
+            $(".js-account-verify").prop('required', true);
+            $('.create').each(function () { $(this).prop('tabindex', 0) });
+
+            App.bindPasswordRequirements();
+        }
+    },
+    bindPasswordRequirements: function () {
+        $('.js-account-password').focusin(function () {
+            $('.js-password-requirements').addClass('showAlert');
+        }).blur(function () {
+            $('.js-password-requirements').removeClass('showAlert');
+        })
     },
     //If user is already logged in, set header and grab user object
     loginCheck: function () {
@@ -183,8 +227,8 @@ const App = {
     //Login from login form
     formLogin: function (e) {
         $this = $(e.currentTarget);
-        const username = $this.find('.js-login-username').val();
-        const password = $this.find('.js-login-password').val();
+        const username = $this.find('.js-account-username').val();
+        const password = $this.find('.js-account-password').val();
         App.login(username, password);
     },
 

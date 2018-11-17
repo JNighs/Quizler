@@ -1,6 +1,11 @@
+body * {
+    box-sizing: border-box;
+}
+
 body {
     text-align: center;
 }
+
 
 .deck-container {
     border: 1px black solid;
@@ -12,4 +17,126 @@ body {
 
 .column {
     flex: 50%;
+}
+
+/*    Form     */
+
+input[type=radio] {
+    position: fixed;
+    left: -200px;
+}
+
+.login, .create {
+    appearance: none;
+    background-color: orange;
+    display: block;
+    transition: 300ms ease;
+    border-radius: 7px;
+    border: 0;
+    max-height: 0;
+    margin: 0;
+    padding: 0 10px;
+    overflow: hidden;
+    width: 250px;
+    opacity: 0;
+    font-size: 16px;
+    text-align: center;
+}
+
+.js-password-requirements {
+    display: block;
+    transition: 300ms ease;
+    max-height: 0;
+    width: 250px;
+    opacity: 0;
+}
+
+.showAlert {
+    max-height: 25px;
+    margin: 0 0 10px 0;
+    opacity: 1;
+}
+
+[id=login]:checked ~ input.login,
+[id=create]:checked ~ input.create,
+[id=reset]:checked ~ input.reset {
+    max-height: 50px;
+    padding: 10px;
+    margin: 0 0 10px 0;
+    opacity: 1;
+}
+
+.account-submit {
+    width: 250px;
+    height: 40px;
+    border-radius: 7px;
+    background-color: orange;
+    font-size: 0;
+    outline: 0;
+}
+
+.account-submit[type=submit]:before {
+    font-size: 16px;
+    content: "Submit";
+}
+
+#loginLabel, #createLabel {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+    font-weight: 700;
+    cursor: pointer;
+    color: black;
+    transition: 300ms ease;
+    width: calc(100% / 3 - 4px);
+    margin: 10px 0;
+}
+
+
+label:after {
+    content: "";
+    border: 15px solid transparent;
+    position: absolute;
+    bottom: -15px;
+    left: calc(50% - 10px);
+    transition: inherit;
+    z-index: -1;
+}
+
+[id=login]:checked ~ [for=login],
+[id=create]:checked ~ [for=create] {
+    color: black;
+}
+
+[id=login]:checked ~ [for=login]:after,
+[id=create]:checked ~ [for=create]:after{
+    border-bottom-color: orange;
+}
+
+
+[id=login]:focus ~ [for=login]:after, 
+[id=create]:focus ~ [for=create]:after {
+    border-bottom-color: black;
+}
+
+input:focus {
+    outline: 1px black solid;
+}
+
+button:focus {
+    border: 1px black solid;
+}
+
+.flex-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    height: 300px;
+    text-align: center;
+    transition: 300ms ease;
+}
+
+fieldset {
+    border: 0;
 }

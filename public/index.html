@@ -15,31 +15,28 @@
     <main role="main">
         <h1>Flashcards App</h1>
         <div class="js-login-page">
-            <fieldset>
-                <legend>Create Account</legend>
-                <span class="js-create-account-error"></span>
-                <form action="#" class="js-account-form" autocomplete="off">
-                    <label for="account-username">Username: </label>
-                    <input type="text" id="account-username" class="js-account-username" placeholder="Enter Username"><br>
-                    <label for="account-password">Password: </label>
-                    <input type="password" id="account-password" class="js-account-password" placeholder="Enter Password"><br>
-                    <label for="account-verify">Verify Password: </label>
-                    <input type="password" id="account-verify" class="js-account-verify" placeholder="Verify Password"><br>
-                    <button type="submit">Submit</button>
-                </form>
-            </fieldset>
-            <fieldset>
-                <legend>Login</legend>
-                <form action="#" class="js-login-form" autocomplete="off">
-                    <label for="login-username">Username: </label>
-                    <input type="text" id="login-username" class="js-login-username" placeholder="Enter Username"
-                        required><br>
-                    <label for="login-password">Password: </label>
-                    <input type="password" id="login-password" class="js-login-password" placeholder="Enter Password"
-                        required><br>
-                    <button type="submit">Submit</button>
-                </form>
-            </fieldset>
+            <div class="flex-wrap">
+                <fieldset>
+                    <form action class="js-account-form" autocomplete="off">
+                        <span hidden id="formLabel">Choose Form Type</span>
+                        <input type="radio" name="rg" id="login" checked aria-labelledby="formLabel" aria-describedby="loginLabel" />
+                        <input type="radio" name="rg" id="create" aria-labelledby="formLabel" aria-describedby="createLabel" />
+
+                        <label for="login" id="loginLabel">Login</label>
+                        <label for="create" id="createLabel">Create</label>
+
+                        <input class="login create js-account-username" type="text" placeholder="Enter username"
+                            aria-label="Enter username" required />
+                        <input class="login create js-account-password" type="password" placeholder="Enter password"
+                            aria-label="Enter password" minlength="8" required />
+                        <div class="js-password-requirements">Password must be at least 8 characters</div>
+                        <input class="create js-account-verify" type="password" placeholder="Repeat password" tabindex="-1"
+                            aria-label="Repeat password" />
+                        <button type="submit" class="account-submit">Submit</button>
+                    </form>
+                </fieldset>
+            </div>
+            <span class="js-create-account-error"></span>
         </div>
         <div class="js-decks-page" hidden>
             <fieldset>
