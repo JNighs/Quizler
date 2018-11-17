@@ -113,7 +113,7 @@ describe('User API', function () {
 
         it('token should be valid and return a user', function () {
             return chai.request(app)
-                .get('/userdata')
+                .get('/api/users/userdata')
                 .set('Authorization', token)
                 .then(function (res) {
                     expect(res).to.have.status(200);
