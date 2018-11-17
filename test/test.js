@@ -18,8 +18,6 @@ function createUser() {
     return {
         "username": faker.internet.userName(),
         "password": faker.internet.password(),
-        "firstName": faker.name.firstName(),
-        "lastName": faker.name.lastName()
     }
 }
 
@@ -87,18 +85,14 @@ describe('User API', function () {
                     expect(res).to.have.status(201);
                     expect(res).to.be.json;
                     expect(res).to.be.an('object');
-                    expect(res.body).to.include.keys('username', 'firstName', 'lastName')
+                    expect(res.body).to.include.keys('username');
                     expect(res.body.id).to.not.be.null;
                     expect(res.body.username).to.equal(user.username);
-                    expect(res.body.firstName).to.equal(user.firstName);
-                    expect(res.body.lastName).to.equal(user.lastName);
 
                     return User.findById(res.body.id);
                 })
                 .then(function (user) {
                     expect(user.username).to.equal(user.username);
-                    expect(user.firstName).to.equal(user.firstName);
-                    expect(user.lastName).to.equal(user.lastName);
                 });
         });
     });
@@ -126,11 +120,9 @@ describe('User API', function () {
                     expect(res).to.be.json;
                     expect(res).to.be.an('object');
                     expect(res.body).to.include.keys('user')
-                    expect(res.body.user).to.include.keys('username', 'firstName', 'lastName')
+                    expect(res.body.user).to.include.keys('username');
                     expect(res.body.user.id).to.not.be.null;
                     expect(res.body.user.username).to.equal(user.username);
-                    expect(res.body.user.firstName).to.equal(user.firstName);
-                    expect(res.body.user.lastName).to.equal(user.lastName);
                 });
         });
     });
