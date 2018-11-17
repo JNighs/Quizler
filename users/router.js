@@ -1,9 +1,10 @@
 'use strict';
 const express = require('express');
+const router = express.Router();
+const passport = require('passport');
 
 const { User } = require('./models');
-
-const router = express.Router();
+const jwtAuth = passport.authenticate('jwt', { session: false });
 
 router.post('/', (req, res) => {
     const requiredFields = ['username', 'password'];
@@ -18,7 +19,7 @@ router.post('/', (req, res) => {
         });
     }
 
-    const stringFields = ['username', 'password', 'firstName', 'lastName'];
+    const stringFields = ['username', 'password'];
     const nonStringField = stringFields.find(
         field => field in req.body && typeof req.body[field] !== 'string'
     );
@@ -51,7 +52,7 @@ router.post('/', (req, res) => {
             min: 1
         },
         password: {
-            min: 10,
+            min: 8,
             max: 72
         }
     };
@@ -79,9 +80,7 @@ router.post('/', (req, res) => {
         });
     }
 
-    let { username, password, firstName = '', lastName = '' } = req.body;
-    firstName = firstName.trim();
-    lastName = lastName.trim();
+    let { username, password } = req.body;
 
     return User.find({ username })
         .countDocuments()
@@ -100,8 +99,6 @@ router.post('/', (req, res) => {
             return User.create({
                 username,
                 password: hash,
-                firstName,
-                lastName
             })
         })
         .then(user => {
@@ -115,10 +112,9 @@ router.post('/', (req, res) => {
         });
 });
 
-router.get('/', (req, res) => {
-    return User.find()
-        .then(users => res.json(users.map(user => user.serialize())))
-        .catch(err => res.status(500).json({ message: 'Internal server error' }));
+//Return user object
+router.get("/userdata", jwtAuth, (req, res) => {
+    res.json({ user: req.user });
 });
 
 module.exports = { router };

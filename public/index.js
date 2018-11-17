@@ -30,11 +30,12 @@ const Ajax = {
     },
     userData() {
         $.ajax({
-            url: './userdata',
+            url: './api/users/userdata',
             type: 'GET',
             success: function (data) {
                 App.user = data.user;
-            }
+            },
+
         })
     },
     deckList() {
