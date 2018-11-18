@@ -16,8 +16,12 @@ const Ajax = {
             url: './api/users/',
             type: 'POST',
             data: data,
-            contentType: 'application/json'
-        });
+            contentType: 'application/json',
+            error: function (xhr) {
+                const err = jQuery.parseJSON(xhr.responseText);
+                App.accountError(err.message);
+            }
+        })
     },
     login(username, password) {
         const data = JSON.stringify({ username: username, password: password });
@@ -25,7 +29,11 @@ const Ajax = {
             url: './api/auth/login',
             type: 'POST',
             data: data,
-            contentType: 'application/json'
+            contentType: 'application/json',
+            error: function (xhr) {
+                const err = jQuery.parseJSON(xhr.responseText);
+                App.accountError(err.message);
+            }
         });
     },
     userData() {
@@ -133,14 +141,13 @@ const App = {
         $('.js-decks-button').click(e => {
             App.showPage('decks');
         });
-
         //Select deck and view its cards
         $('.js-decks-container').on("click", ".js-deck-select-button", function (e) {
             App.selectDeck(e);
         });
-
         //Changed inputs required depending on account form selection
         $('input[type=radio][name=rg]').change(function (e) {
+            App.removeError();
             App.accountFormRequiredFields(e);
         });
 
@@ -149,15 +156,15 @@ const App = {
         //Find active search form
         const formType = $('input:checked').attr('id');
         if (formType === 'login') {
-            console.log('Login checked');
             App.formLogin(e);
         } else if (formType === 'create') {
-            console.log('Create checked');
-            App.createAccount(e);
+            App.verifyAccountCreation(e);
         }
+
         //Clear password text fields
         $('input').not('.js-account-username').val("");
     },
+    //Modify element properties when swtiching between Login and Create forms
     accountFormRequiredFields: function (e) {
         _this = e.currentTarget;
         //Remove ability to tab to all forms
@@ -196,23 +203,49 @@ const App = {
             Ajax.userData();
         }
     },
-    //Create account then log into it
-    createAccount: function (e) {
+    //Verify username and password fields for account creation
+    verifyAccountCreation: function (e) {
         $this = $(e.currentTarget);
         const username = $this.find('.js-account-username').val();
         const password = $this.find('.js-account-password').val();
         const verify = $this.find('.js-account-verify').val();
-        //Check if password and verification are the same
-        if (password !== verify) {
-            $this.find('.js-account-password').val('');
-            $this.find('.js-account-verify').val('');
-            $('.js-create-account-error').text('Passwords do not match.');
-        } else {
-            Ajax.createAccount(username, password)
-                .then(() => {
-                    App.login(username, password)
-                });
+
+        //Empty password fields
+        $this.find('.js-account-password').val('');
+        $this.find('.js-account-verify').val('');
+
+        //Check if password is at least 8 characters long
+        if (password.length < 8) {
+            App.accountError('Password needs to be at least 8 characters long');
         }
+        //Check for whitespace
+        else if (username.trim() !== username || password.trim() !== password) {
+            App.accountError('Fields cannot start or end with whitespace');
+        }
+        //Check if password and verification are the same
+        else if (password !== verify) {
+            App.accountError('Passwords do not match');
+        }
+        //Create account
+        else {
+            App.removeError();
+            App.createAccount(username, password);
+        }
+    },
+    accountError: function (string = 'An error has occured') {
+        const $error = $('.js-create-account-error');
+        $error.addClass('showAlert');
+        $error.text(string);
+    },
+    removeError: function () {
+        $('.js-create-account-error').removeClass('showAlert');
+    },
+    //Create account then log into it
+    createAccount: function (username, password) {
+        Ajax.createAccount(username, password)
+            .then(() => {
+                App.login(username, password)
+            });
     },
     //Login and show user's deck page
     login: function (username, password) {
@@ -222,7 +255,7 @@ const App = {
                 localStorage.token = data.authToken;
                 App.loginCheck();
                 App.showPage('decks');
-            });
+            })
     },
     //Login from login form
     formLogin: function (e) {
@@ -257,6 +290,9 @@ const App = {
     render: {
         page: function (inputPage) {
             switch (inputPage) {
+                case 'login':
+                    App.removeError();
+                    break;
                 case 'decks':
                     Ajax.deckList().then(App.render.decks);
                     break;

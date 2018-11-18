@@ -81,8 +81,8 @@ router.post('/', (req, res) => {
     }
 
     let { username, password } = req.body;
-
-    return User.find({ username })
+    //uniqueUsernames are lowercase
+    return User.find({ uniqueUsername: username.toLowerCase() })
         .countDocuments()
         .then(count => {
             if (count > 0) {
@@ -97,7 +97,8 @@ router.post('/', (req, res) => {
         })
         .then(hash => {
             return User.create({
-                username,
+                uniqueUsername: username,
+                username: username,
                 password: hash,
             })
         })

@@ -43,7 +43,7 @@ input[type=radio] {
     text-align: center;
 }
 
-.js-password-requirements {
+.js-password-requirements, .js-create-account-error {
     display: block;
     transition: 300ms ease;
     max-height: 0;
@@ -52,7 +52,7 @@ input[type=radio] {
 }
 
 .showAlert {
-    max-height: 25px;
+    max-height: 50px;
     margin: 0 0 10px 0;
     opacity: 1;
 }

@@ -5,10 +5,17 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const UserSchema = mongoose.Schema({
-    username: {
+    //case insenstive unique username
+    uniqueUsername: {
         type: String,
         required: true,
+        lowercase: true,
         unique: true
+    },
+    //original user typed case-sensitive name
+    username: {
+        type: String,
+        required: true
     },
     password: {
         type: String,
@@ -19,7 +26,7 @@ const UserSchema = mongoose.Schema({
 UserSchema.methods.serialize = function () {
     return {
         id: this._id,
-        username: this.username || '',
+        username: this.username || ''
     }
 };
 
