@@ -34,7 +34,7 @@ router.post("/", jwtAuth, (req, res) => {
         console.error(message);
         return res.status(400).send(message);
     }
-    //Create deck with cards already in it (used for testing mostly)
+    //Create deck with cards already in it (used for testing)
     let cards = [];
     if ("cards" in req.body) {
         cards = req.body.cards

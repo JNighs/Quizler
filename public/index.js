@@ -149,12 +149,16 @@ const App = {
         $('.js-decks-button').click(e => {
             App.showPage('decks');
         });
+        //Show Create Deck form
+        $('.js-toggle-create-deck-form').click(e => {
+            $('.js-deck-form').toggleClass('showForm');
+        });
         //Select deck and view its cards
         $('.js-decks-container').on("click", ".js-deck-select-button", function (e) {
             App.selectDeck(e);
         });
         //Changed inputs required depending on account form selection
-        $('input[type=radio][name=rg]').change(function (e) {
+        $('input[type=radio][name=rg]').change(e => {
             App.removeAccountError();
             App.accountFormRequiredFields(e);
         });
@@ -309,6 +313,7 @@ const App = {
                     App.removeAccountError();
                     break;
                 case 'decks':
+                    $('.js-deck-form').removeClass('showForm');
                     $('.js-logout-button').show();
                     Ajax.deckList().then(App.render.decks);
                     break;
@@ -319,7 +324,8 @@ const App = {
         },
         decks: function (data) {
             const $deckContainer = $('.js-decks-container');
-            deck.deckList = data;
+            //Reverse so that the newest deck is at front
+            deck.deckList = data.reverse();
             //Populate decks list
             $deckContainer.empty();
             deck.deckList.forEach((deck, index) => {

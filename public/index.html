@@ -40,11 +40,12 @@
             </div>
         </div>
         <div class="js-decks-page" hidden>
+            <button type="button" class="js-toggle-create-deck-form">Create Deck</button>
             <fieldset>
                 <form action="#" class="js-deck-form" autocomplete="off">
-                    <label for="new-deck">Create a Deck: </label>
-                    <input type="text" id="new-deck" class="js-new-deck" placeholder="Enter Deck Name">
-                    <button type="submit">Submit</button>
+                    <span hidden id="createDeckLabel">Deck Name</span>
+                    <input type="text" id="new-deck" class="js-new-deck" placeholder="Enter Deck Name" aria-labelledby="formLabel">
+                    <button type="submit" class="new-deck-submit">Submit</button>
                 </form>
             </fieldset>
             <div class="js-decks-container"></div>
