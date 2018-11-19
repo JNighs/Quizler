@@ -110,7 +110,15 @@ const Ajax = {
             type: 'DELETE',
             contentType: 'application/json'
         });
-    }
+    },
+    updateCardValue(deckID, cardID, increase) {
+        return $.ajax({
+            url: `./decks/${deckID}/cards/${cardID}/level`,
+            type: 'PUT',
+            data: JSON.stringify({ increase: increase }),
+            contentType: 'application/json'
+        });
+    },
 }
 
 const App = {
@@ -147,7 +155,7 @@ const App = {
         });
         //Changed inputs required depending on account form selection
         $('input[type=radio][name=rg]').change(function (e) {
-            App.removeError();
+            App.removeAccountError();
             App.accountFormRequiredFields(e);
         });
 
@@ -188,11 +196,15 @@ const App = {
             App.bindPasswordRequirements();
         }
     },
+    //Shows password requirements when password field is focused
     bindPasswordRequirements: function () {
+        const $field = $('.js-password-requirements');
         $('.js-account-password').focusin(function () {
-            $('.js-password-requirements').addClass('showAlert');
+            //$field.text("Password must be at least 8 characters");
+            $field.addClass('showAlert');
         }).blur(function () {
-            $('.js-password-requirements').removeClass('showAlert');
+            $field.removeClass('showAlert');
+            //$field.empty();
         })
     },
     //If user is already logged in, set header and grab user object
@@ -228,16 +240,18 @@ const App = {
         }
         //Create account
         else {
-            App.removeError();
+            App.removeAccountError();
             App.createAccount(username, password);
         }
     },
+    //Shows error string for account form
     accountError: function (string = 'An error has occured') {
         const $error = $('.js-create-account-error');
         $error.addClass('showAlert');
         $error.text(string);
     },
-    removeError: function () {
+    //Hides error element for account form
+    removeAccountError: function () {
         $('.js-create-account-error').removeClass('showAlert');
     },
     //Create account then log into it
@@ -291,9 +305,11 @@ const App = {
         page: function (inputPage) {
             switch (inputPage) {
                 case 'login':
-                    App.removeError();
+                    $('.js-logout-button').hide();
+                    App.removeAccountError();
                     break;
                 case 'decks':
+                    $('.js-logout-button').show();
                     Ajax.deckList().then(App.render.decks);
                     break;
                 case 'cards':
@@ -302,22 +318,95 @@ const App = {
             }
         },
         decks: function (data) {
-            const $decks = $('.js-decks-container');
+            const $deckContainer = $('.js-decks-container');
             deck.deckList = data;
             //Populate decks list
-            $decks.empty();
+            $deckContainer.empty();
             deck.deckList.forEach((deck, index) => {
-                $decks.append(`
-                    <div class="deck-container">
-                        <h2>${deck.title}</h2>
-                        <button type="button" class="js-deck-select-button" data-index="${index}">Select</button>
-                        <button type="button" class="js-deck-edit-button" data-index="${index}">Edit</button>
-                        <button type="button" class="js-deck-delete-button" data-index="${index}">Delete</button>
-                    </div>
-                `);
+                const $deck = $('<div class="deck-container"></div>');
+                $deckContainer.append($deck);
+                App.render.deckCardStack($deck, deck.title, deck.cards, index);
             });
             //Show page
             $('.js-decks-page').show();
+        },
+        //Renders the visual deck stack
+        deckCardStack: function ($deck, title, cards, deckIndex) {
+            //deckMax based on how many cards before it doesn't fit in the container
+            const deckMax = 48;
+            let deckLength = cards.length;
+            let deckThickness;
+
+            //Calculate deck thickness 
+            //(magic numbers based on when decks clip the div block)
+            if (cards.length < 12) {
+                deckThickness = 4;
+            } else if (cards.length < 16) {
+                deckThickness = 3;
+            } else if (cards.length < 24) {
+                deckThickness = 2;
+            } else {
+                deckThickness = 1;
+            }
+            //Render deck's cards
+            cards.forEach((card, index) => {
+                //Stop rendering at deckMax
+                if (index >= deckMax) return;
+                App.render.deckCard($deck, index, deckThickness, card.level);
+            });
+            //Need to know if deck was capped in order to place the top card
+            if (deckLength >= deckMax) { deckLength = deckMax };
+            //Render front card
+            const $frontCard = App.render.deckCard($deck, deckLength, deckThickness);
+            $frontCard.append(App.render.frontCard(title, deckIndex));
+        },
+        //Renders the cards within the deck stack
+        deckCard: function ($deck, index, deckThickness, cardLevel) {
+            const $elem = $('<div class="deck-card"></div>');
+            const offset = index * deckThickness;
+            $deck.append($elem);
+            $elem.css({
+                "bottom": offset,
+                "right": offset,
+                "z-index": index
+            });
+            if (cardLevel === 0) {
+                $elem.css({
+                    "background": "#05668D",
+                    "box-shadow": "2px 2px #055474"
+                });
+            }
+            else if (cardLevel === 1) {
+                $elem.css({
+                    "background": "#028090",
+                    "box-shadow": "2px 2px #026976"
+                });
+            }
+            else if (cardLevel === 2) {
+                $elem.css({
+                    "background": "#00A896",
+                    "box-shadow": "2px 2px #008A7B"
+                });
+            }
+            else if (cardLevel === 3) {
+                $elem.css({
+                    "background": "#02C39A",
+                    "box-shadow": "2px 2px #02A07F"
+                });
+            }
+            //Return element for futher modification (front card info)
+            return $elem;
+        },
+        //Renders the front card of the deck (shows deck title and buttons)
+        frontCard: function (title, deckIndex) {
+            return `
+                <h2>${title}</h2>
+                <div class="card-buttons-container">
+                    <button type="button" class="js-deck-select-button" data-index="${deckIndex}">Select</button>
+                    <button type="button" class="js-deck-edit-button" data-index="${deckIndex}">Edit</button>
+                    <button type="button" class="js-deck-delete-button" data-index="${deckIndex}">Delete</button>
+                </div>
+            `;
         },
         cards: function () {
             const cardList = deck.currentDeck.cards;
@@ -349,7 +438,8 @@ const App = {
 const Deck = {
     settings: {
         deckList: null,
-        currentDeck: null
+        currentDeck: null,
+        currentCard: null,
     },
     init: function () {
         deck = this.settings;
@@ -412,17 +502,19 @@ const Deck = {
     editDeck: function (e) {
         const selected = e.currentTarget.dataset.index;
         const deckID = deck.deckList[selected]._id;
-        const $deckTitle = $(e.currentTarget).siblings('h2');
+        const $deckTitle = $(e.currentTarget).parent().siblings('h2');
         const currentTitle = $deckTitle.text();
 
         //Make title editable text, focus it
         $deckTitle.prop('contentEditable', true).focus()
             //On deselecting text, write new name into database
             .on('blur', function () {
-                const newTitle = $deckTitle.text()
+                const newTitle = $deckTitle.text().trim();
                 if (newTitle !== currentTitle) {
                     Ajax.updateDeck(deckID, newTitle);
                 }
+                //Reset text field value to remove whitespace
+                $deckTitle.text(newTitle);
                 $deckTitle.prop('contentEditable', false);
             });
     },
@@ -496,20 +588,22 @@ const Quiz = {
         });
 
         $('.js-correct-button').click(function () {
+            Quiz.changeCardScore(true);
             quiz.score++;
             Quiz.changeCard();
         });
 
         $('.js-incorrect-button').click(function () {
+            Quiz.changeCardScore(false);
             Quiz.changeCard();
         });
     },
 
     renderCard: function () {
-        const card = deck.currentDeck.cards[quiz.card];
+        deck.currentCard = deck.currentDeck.cards[quiz.card];
         $('.js-card-text').html(`
-            <div class="card-question">${card.question}</div>
-            <div class="card-answer" hidden>${card.answer}</div>
+            <div class="card-question">${deck.currentCard.question}</div>
+            <div class="card-answer" hidden>${deck.currentCard.answer}</div>
         `);
     },
 
@@ -526,6 +620,16 @@ const Quiz = {
             Quiz.showScore();
         }
 
+    },
+
+    changeCardScore: function (increase) {
+        const deckID = deck.currentDeck._id;
+        const cardID = deck.currentDeck.cards[quiz.card]._id;
+        if (increase) {
+            Ajax.updateCardValue(deckID, cardID, true);
+        } else {
+            Ajax.updateCardValue(deckID, cardID, false);
+        }
     },
 
     showScore: function () {

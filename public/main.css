@@ -1,14 +1,12 @@
 body * {
     box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
 }
 
 body {
     text-align: center;
-}
-
-
-.deck-container {
-    border: 1px black solid;
+    background: #faffed;
+    
 }
 
 .row {
@@ -17,6 +15,10 @@ body {
 
 .column {
     flex: 50%;
+}
+
+.js-logout-button {
+    margin: 10px;
 }
 
 /*    Form     */
@@ -28,7 +30,7 @@ input[type=radio] {
 
 .login, .create {
     appearance: none;
-    background-color: orange;
+    background-color: #F0F3BD;
     display: block;
     transition: 300ms ease;
     border-radius: 7px;
@@ -49,6 +51,7 @@ input[type=radio] {
     max-height: 0;
     width: 250px;
     opacity: 0;
+    pointer-events: none;
 }
 
 .showAlert {
@@ -70,12 +73,20 @@ input[type=radio] {
     width: 250px;
     height: 40px;
     border-radius: 7px;
-    background-color: orange;
+    transition: 300ms ease;
+    background-color: #05668D;
     font-size: 0;
     outline: 0;
+    border: none;
+    cursor: pointer;
+}
+
+.account-submit:focus {
+    background-color: #055474;
 }
 
 .account-submit[type=submit]:before {
+    color: #faffed;
     font-size: 16px;
     content: "Submit";
 }
@@ -86,7 +97,7 @@ input[type=radio] {
     text-align: center;
     font-weight: 700;
     cursor: pointer;
-    color: black;
+    color: #05668D;
     transition: 300ms ease;
     width: calc(100% / 3 - 4px);
     margin: 10px 0;
@@ -105,26 +116,26 @@ label:after {
 
 [id=login]:checked ~ [for=login],
 [id=create]:checked ~ [for=create] {
-    color: black;
+    color: #05668D;
 }
 
 [id=login]:checked ~ [for=login]:after,
 [id=create]:checked ~ [for=create]:after{
-    border-bottom-color: orange;
+    border-bottom-color: #F0F3BD;
 }
 
 
 [id=login]:focus ~ [for=login]:after, 
 [id=create]:focus ~ [for=create]:after {
-    border-bottom-color: black;
+    border-bottom-color: #05668D;
 }
 
 input:focus {
-    outline: 1px black solid;
+    outline: 1px #05668D solid;
 }
 
 button:focus {
-    border: 1px black solid;
+    border: 1px #05668D solid;
 }
 
 .flex-wrap {
@@ -139,4 +150,52 @@ button:focus {
 
 fieldset {
     border: 0;
+}
+
+/*      Deck      */
+
+.js-decks-container {
+    display: inline-flex;
+}
+
+.deck-container {
+    padding: 25px;
+    position: relative;
+    height: 300px;
+    width: 275px;
+    touch-action: none;
+    overflow: hidden;
+}
+
+.deck-card {
+    width: 200px;
+    height: 250px;
+    background: #028090;
+    border-radius: 10px;
+    box-shadow: 2px 2px #026976;
+    font-size: 2.5em;
+    color: white;
+    overflow: hidden;
+    margin: 0 2px 2px 0;
+    padding: 5px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: auto;
+}
+
+.card-buttons-container{
+    position: absolute;
+    bottom: 10px;
+    right: 16px;
+}
+
+h2 {
+    color: #F0F3BD;
+    font-size: 20pt;
+}
+
+h1 {
+    font-size: 48pt;
+    color: #05668D;
 }

@@ -89,6 +89,17 @@ router.put("/:id/cards/:cardID", jwtAuth, (req, res) => {
         .then(deck => res.status(204).end())
         .catch(err => res.status(500).json({ message: "Internal server error" }));
 });
+//Update card's level
+router.put("/:id/cards/:cardID/level", jwtAuth, (req, res) => {
+    Deck.findOne({ 'cards._id': req.params.cardID })
+        .then(deck => {
+            const card = deck.cards.id(req.params.cardID);
+            card.changeLevel(req.body.increase);
+            deck.save();
+            res.status(204).end();
+        })
+        .catch(err => res.status(500).json({ message: "Internal server error" }));
+});
 //Deletes card within deck
 router.delete("/:id/cards/:cardID", jwtAuth, (req, res) => {
     const toDelete = {
