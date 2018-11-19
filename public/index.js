@@ -151,6 +151,8 @@ const App = {
         });
         //Show Create Deck form
         $('.js-toggle-create-deck-form').click(e => {
+            $('.js-new-deck').prop('tabindex', $('.js-new-deck').prop('tabindex') === 0 ? -1 : 0);
+            $('.new-deck-submit').prop('tabindex', $('.new-deck-submit').prop('tabindex') === 0 ? -1 : 0);
             $('.js-deck-form').toggleClass('showForm');
         });
         //Select deck and view its cards
@@ -285,6 +287,7 @@ const App = {
 
     logout: function () {
         localStorage.clear();
+        Slick.destroy(Slick.decks);
         App.showPage('login');
     },
     //Go to selected Deck's cards page
@@ -324,15 +327,18 @@ const App = {
         },
         decks: function (data) {
             const $deckContainer = $('.js-decks-container');
+            //Reset container
+            Slick.destroy(Slick.decks);
             //Reverse so that the newest deck is at front
             deck.deckList = data.reverse();
             //Populate decks list
-            $deckContainer.empty();
             deck.deckList.forEach((deck, index) => {
                 const $deck = $('<div class="deck-container"></div>');
                 $deckContainer.append($deck);
                 App.render.deckCardStack($deck, deck.title, deck.cards, index);
             });
+            //Run slick carousel
+            Slick.run(Slick.decks);
             //Show page
             $('.js-decks-page').show();
         },
@@ -369,11 +375,12 @@ const App = {
         //Renders the cards within the deck stack
         deckCard: function ($deck, index, deckThickness, cardLevel) {
             const $elem = $('<div class="deck-card"></div>');
+            const centerOffset = 25;
             const offset = index * deckThickness;
             $deck.append($elem);
             $elem.css({
                 "bottom": offset,
-                "right": offset,
+                "right": offset + centerOffset,
                 "z-index": index
             });
             if (cardLevel === 0) {
@@ -652,10 +659,34 @@ const Quiz = {
     }
 }
 
+const Slick = {
+    decks: $('.js-decks-container'),
+    cards: $('.js-cards-list'),
+    run: function ($elem) {
+        if ($elem = this.decks) {
+            $elem.slick({
+                dots: true,
+                speed: 300,
+                infinite: false,
+                variableWidth: true,
+                centerMode: true,
+                touchThreshold: 10,
+            });
+        } else if ($elem = this.cards) {
+
+        }
+    },
+    destroy: function ($elem) {
+        $elem.slick('unslick');
+        $('.js-decks-container').empty();
+    }
+}
+
 function onLoad() {
     App.init();
     Deck.init();
     Quiz.init();
+    Slick.run(Slick.decks);
 }
 
 $(onLoad);

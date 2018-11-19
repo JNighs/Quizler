@@ -27,6 +27,23 @@ h1 {
     flex: 50%;
 }
 
+button {
+    width: 250px;
+    height: 40px;
+    border-radius: 7px;
+    transition: 300ms ease;
+    background-color: #05668D;
+    outline: 0;
+    border: none;
+    cursor: pointer;
+    color: #faffed;
+    font-size: 16px;
+}
+
+button:focus {
+    background-color: #055474;
+}
+
 .js-logout-button {
     margin: 100px 10px 10px 10px;
 }
@@ -77,23 +94,6 @@ input[type=radio] {
     padding: 10px;
     margin: 0 0 10px 0;
     opacity: 1;
-}
-
-button {
-    width: 250px;
-    height: 40px;
-    border-radius: 7px;
-    transition: 300ms ease;
-    background-color: #05668D;
-    outline: 0;
-    border: none;
-    cursor: pointer;
-    color: #faffed;
-    font-size: 16px;
-}
-
-button:focus {
-    background-color: #055474;
 }
 
 #loginLabel, #createLabel {
@@ -191,7 +191,8 @@ fieldset {
 }
 
 .js-decks-container {
-    display: inline-flex;
+    margin: auto;
+    width: 90%;
 }
 
 .deck-container {
@@ -238,4 +239,8 @@ fieldset {
     width: 100px;
     height: 30px;
     font-size: 12pt;
+}
+
+.slick-slide {
+    width: 275px;
 }
