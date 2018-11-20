@@ -277,7 +277,8 @@ fieldset {
     padding: 10px;
     margin: 15px auto 0;
     box-shadow: 3px 3px #026976;
-	backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 	position: absolute;
 	top: 0;
 	left: 0;
