@@ -9,7 +9,7 @@ body {
     
 }
 
-h2 {
+h2, h3 {
     color: #F0F3BD;
     font-size: 20pt;
 }
@@ -19,12 +19,9 @@ h1 {
     color: #05668D;
 }
 
-.row {
-    display: flex;
-}
-
-.column {
-    flex: 50%;
+h3 {
+    margin: 0;
+    font-size: 15pt;
 }
 
 button {
@@ -48,6 +45,8 @@ button:focus {
     margin: 100px 10px 10px 10px;
 }
 
+
+
 /*    Account Form     */
 
 input[type=radio] {
@@ -55,7 +54,7 @@ input[type=radio] {
     left: -200px;
 }
 
-.login, .create {
+.login, .create,.js-deck-form input, .js-card-form input {
     appearance: none;
     background-color: #F0F3BD;
     display: block;
@@ -63,13 +62,33 @@ input[type=radio] {
     border-radius: 7px;
     border: 0;
     max-height: 0;
-    margin: 0;
     padding: 0 10px;
     overflow: hidden;
     width: 250px;
     opacity: 0;
     font-size: 16px;
     text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.new-deck-submit, .new-card-submit {
+    max-height: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.js-deck-form input.showField, 
+.new-deck-submit.showField, 
+.js-card-form input.showField,
+.new-card-submit.showField
+{
+    max-height: 50px;
+    padding: 10px;
+    opacity: 1;
+    margin-bottom: 10px;
+    pointer-events: all;
 }
 
 .js-password-requirements, .js-create-account-error {
@@ -157,9 +176,9 @@ fieldset {
     border: 0;
 }
 
-/*      Deck      */
+/*      Deck List      */
 
-.js-deck-form {
+.js-deck-form, .js-card-form {
     display: block;
     text-align: center;
     transition: 300ms ease;
@@ -168,34 +187,18 @@ fieldset {
     opacity: 0;
 }
 
-.js-new-deck {
-    display: block;
-    appearance: none;
-    background-color: #F0F3BD;
-    display: block;
-    transition: 300ms ease;
-    border-radius: 7px;
-    border: 0;
-    padding: 10px;
-    overflow: hidden;
-    width: 250px;
-    font-size: 16px;
-    text-align: center;
-    margin: 0 auto 10px;
-}
-
 .showForm {
-    max-height: 100px;
+    max-height: 200px;
     margin: 0 0 10px 0;
     opacity: 1;
 }
 
-.js-decks-container {
+.js-decks-container, .js-cards-list {
     margin: auto;
     width: 90%;
 }
 
-.deck-container {
+.deck-container, .js-card-container {
     padding: 25px;
     position: relative;
     height: 300px;
@@ -204,7 +207,7 @@ fieldset {
     overflow: hidden;
 }
 
-.deck-card {
+.deck-card, .front, .back {
     width: 200px;
     height: 250px;
     background: #028090;
@@ -243,4 +246,60 @@ fieldset {
 
 .slick-slide {
     width: 275px;
+    outline: none;
+}
+
+/*      Card List      */
+
+.js-card-container {
+    perspective: 1000px;
+    height: 300px;
+}
+
+.js-card-container, .front, .back {
+    padding: 0;
+}
+
+/* flip speed goes here */
+.flip {
+    transform: rotateY(180deg); 
+}
+
+.flipper {
+	transition: 0.6s;
+	transform-style: preserve-3d;
+
+	position: relative;
+}
+
+/* hide back of pane during swap */
+.front, .back {
+    padding: 10px;
+    margin: 15px auto 0;
+    box-shadow: 3px 3px #026976;
+	backface-visibility: hidden;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+/* front pane, placed above back */
+.front {
+	z-index: 2;
+	/* for firefox 31 */
+	transform: rotateY(0deg);
+}
+
+/* back, initially hidden pane */
+.back {
+    background: #00A896;
+	transform: rotateY(180deg);
+}
+
+.back h3 {
+    color: #131515;
+}
+
+.js-start-quiz-button, .js-decks-button {
+    margin-bottom: 10px;
 }

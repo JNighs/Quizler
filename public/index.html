@@ -46,28 +46,29 @@
             <fieldset>
                 <form action="#" class="js-deck-form" autocomplete="off">
                     <span hidden id="createDeckLabel">Deck Name</span>
-                    <input type="text" id="new-deck" class="js-new-deck" placeholder="Enter Deck Name" aria-labelledby="formLabel" tabindex="-1">
+                    <input type="text" class="js-new-deck" placeholder="Enter Deck Name" aria-labelledby="createDeckLabel"
+                        tabindex="-1">
                     <button type="submit" class="new-deck-submit" tabindex="-1">Submit</button>
                 </form>
             </fieldset>
             <div class="js-decks-container"></div>
         </div>
         <div class="js-cards-page" hidden>
+            <button type="button" class="js-toggle-create-card-form">Create Card</button>
             <fieldset>
-                <legend>Create a Card</legend>
                 <form action="#" class="js-card-form" autocomplete="off">
-                    <label for="new-card-question">Question: </label>
-                    <input type="text" id="new-card-question" class="js-new-card-question" placeholder="Enter Card Question"
-                        required>
-                    <label for="new-card-answer">Answer: </label>
-                    <input type="text" id="new-card-answer" class="js-new-card-answer" placeholder="Enter Card Answer"
-                        required>
-                    <button type="submit">Submit</button>
+                    <span hidden id="cardQuestion">Card Question</span>
+                    <input type="text" class="js-new-card-question" placeholder="Enter Question" aria-labelledby="cardQuestion"
+                        tabindex="-1" required>
+                    <span hidden id="cardAnswer">Card Answer</span>
+                    <input type="text" class="js-new-card-answer" placeholder="Enter Answer" aria-labelledby="cardAnswer"
+                        tabindex="-1" required>
+                    <button type="submit" class="new-card-submit" tabindex="-1">Submit</button>
                 </form>
             </fieldset>
             <div class="js-cards-list"></div>
-            <button type="button" class="js-start-quiz-button">START QUIZ</button><br>
-            <button type="button" class="js-decks-button">RETURN TO DECKS</button>
+            <button type="button" class="js-start-quiz-button">Start Quiz</button><br>
+            <button type="button" class="js-decks-button">Return to Decks</button>
         </div>
         <div class="js-quiz-page" hidden>
             <div class="js-card-container">

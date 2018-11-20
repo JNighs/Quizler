@@ -151,9 +151,11 @@ const App = {
         });
         //Show Create Deck form
         $('.js-toggle-create-deck-form').click(e => {
-            $('.js-new-deck').prop('tabindex', $('.js-new-deck').prop('tabindex') === 0 ? -1 : 0);
-            $('.new-deck-submit').prop('tabindex', $('.new-deck-submit').prop('tabindex') === 0 ? -1 : 0);
-            $('.js-deck-form').toggleClass('showForm');
+            App.showForm('deck', 'toggle');
+        });
+        //Show Create Card form
+        $('.js-toggle-create-card-form').click(e => {
+            App.showForm('card', 'toggle');
         });
         //Select deck and view its cards
         $('.js-decks-container').on("click", ".js-deck-select-button", function (e) {
@@ -164,7 +166,11 @@ const App = {
             App.removeAccountError();
             App.accountFormRequiredFields(e);
         });
-
+        //Flip card over
+        $('.js-cards-list').on("click", ".js-card-flip", function (e) {
+            const $this = $(e.currentTarget);
+            $this.closest('.flipper').toggleClass("flip");
+        });
     },
     routeAccountForm: function (e) {
         //Find active search form
@@ -296,6 +302,37 @@ const App = {
         deck.currentDeck = deck.deckList[selected];
         App.showPage('cards');
     },
+    //Show form (this code is a bit of a mess)
+    showForm: function (form, action) {
+        if (form === 'deck') {
+            const $nameField = $('.js-new-deck');
+            const $submit = $('.new-deck-submit');
+            const array = [$nameField, $submit];
+            App.modifyForm(form, action, array);
+        } else if (form === 'card') {
+            const $question = $('.js-new-card-question');
+            const $answer = $('.js-new-card-answer');
+            const $submit = $('.new-card-submit');
+            const array = [$question, $answer, $submit];
+            App.modifyForm(form, action, array);
+        }
+    },
+    //used for showForm() element modifications
+    modifyForm: function (form, action, array) {
+        if (action === 'toggle') {
+            array.forEach($elem => {
+                $elem.prop('tabindex', $elem.prop('tabindex') === 0 ? -1 : 0);
+                $elem.toggleClass('showField');
+            });
+            $(`.js-${form}-form`).toggleClass('showForm');
+        } else if (action === 'off') {
+            array.forEach($elem => {
+                $elem.prop('tabindex', -1);
+                $elem.removeClass('showField');
+            });
+            $(`.js-${form}-form`).removeClass('showForm');
+        }
+    },
     //Shows input page, hides rest
     showPage: function (inputPage) {
         const pages = ['login', 'decks', 'cards', 'quiz', 'score'];
@@ -316,11 +353,15 @@ const App = {
                     App.removeAccountError();
                     break;
                 case 'decks':
-                    $('.js-deck-form').removeClass('showForm');
+                    App.showForm('deck', 'off');
                     $('.js-logout-button').show();
                     Ajax.deckList().then(App.render.decks);
                     break;
                 case 'cards':
+                    App.showForm('card', 'off');
+                    if (deck.currentDeck.cards.length === 0) {
+                        $('.js-start-quiz-button').hide();
+                    } else { $('.js-start-quiz-button').show(); }
                     App.render.cards();
                     break;
             }
@@ -422,28 +463,39 @@ const App = {
             `;
         },
         cards: function () {
-            const cardList = deck.currentDeck.cards;
+            const cardList = deck.currentDeck.cards.reverse();
             const $list = $('.js-cards-list');
+            //Reset container
+            Slick.destroy(Slick.cards);
             $list.empty();
             if (!cardList.empty) {
                 cardList.forEach((card, index) => {
                     $list.append(`
                     <div class="js-card-container">
-                        <div class="row">
-                            <div class="column">
+                        <div class="flipper">
+                            <div class="front">
                                 <h3>${card.question}</h3>
-                                <button type="button" class="js-card-edit-question-button" data-index="${index}">Edit</button>
+                                <div class="card-buttons-container">    
+                                <button type="button" class="js-card-flip">Flip</button>
+                                    <button type="button" class="js-card-edit-question-button" data-index="${index}">Edit</button>
+                                    <button type="button" class="js-card-delete-button" data-index="${index}">Delete</button>
+                                </div>
                             </div>
-                            <div class="column">
+                            <div class="back">
                                 <h3>${card.answer}</h3>
-                                <button type="button" class="js-card-edit-answer-button" data-index="${index}">Edit</button>
+                                <div class="card-buttons-container">
+                                <button type="button" class="js-card-flip">Flip</button>
+                                    <button type="button" class="js-card-edit-answer-button" data-index="${index}">Edit</button>
+                                    <button type="button" class="js-card-delete-button" data-index="${index}">Delete</button>
+                                </div>
                             </div>
                         </div>
-                        <button type="button" class="js-card-delete-button" data-index="${index}">Delete</button>
                     </div>
-            `);
+                        `);
                 });
             }
+
+            Slick.run(Slick.cards);
         }
     },
 };
@@ -491,17 +543,20 @@ const Deck = {
         });
     },
     createDeck: function (e) {
-        const deckTitle = $(e.currentTarget).find('.js-new-deck').val();
+        const $field = $(e.currentTarget).find('.js-new-deck');
         //Create deck then reload decks page
-        Ajax.createDeck(deckTitle)
-            .then(App.showPage('decks'));
+        Ajax.createDeck($field.val())
+            .then(() => {
+                $field.val("");
+                App.showPage('decks');
+            });
     },
     createCard: function (e) {
         const $this = $(e.currentTarget);
-        const cardQuestion = $this.find('.js-new-card-question').val();
-        const cardAnswer = $this.find('.js-new-card-answer').val();
+        const $question = $this.find('.js-new-card-question');
+        const $answer = $this.find('.js-new-card-answer');
         //Add card to deck then reload cards page
-        Ajax.createCard(deck.currentDeck._id, cardQuestion, cardAnswer)
+        Ajax.createCard(deck.currentDeck._id, $question.val(), $answer.val())
             .then(() => {
                 //Retrieve updated deck
                 return Ajax.deckByID(deck.currentDeck._id);
@@ -509,6 +564,8 @@ const Deck = {
             .then((data) => {
                 //Show updated cards
                 deck.currentDeck = data;
+                $question.val('');
+                $answer.val('');
                 App.showPage('cards');
             });
     },
@@ -535,7 +592,7 @@ const Deck = {
         const index = e.currentTarget.dataset.index;
         const _deck = deck.currentDeck;
         const _card = _deck.cards[index];
-        const $cardText = $(e.currentTarget).siblings('h3');
+        const $cardText = $(e.currentTarget).parent().siblings('h3');
         let currentText;
         if (cardSide === "question") {
             currentText = _card.question;
@@ -662,19 +719,20 @@ const Quiz = {
 const Slick = {
     decks: $('.js-decks-container'),
     cards: $('.js-cards-list'),
+    init: function () {
+        this.run(this.decks);
+        this.run(this.cards);
+    },
     run: function ($elem) {
-        if ($elem = this.decks) {
-            $elem.slick({
-                dots: true,
-                speed: 300,
-                infinite: false,
-                variableWidth: true,
-                centerMode: true,
-                touchThreshold: 10,
-            });
-        } else if ($elem = this.cards) {
-
-        }
+        $elem.slick({
+            //dots: true,
+            speed: 300,
+            infinite: false,
+            variableWidth: true,
+            centerMode: true,
+            touchThreshold: 10,
+            swipeToSlide: true,
+        });
     },
     destroy: function ($elem) {
         $elem.slick('unslick');
@@ -686,7 +744,7 @@ function onLoad() {
     App.init();
     Deck.init();
     Quiz.init();
-    Slick.run(Slick.decks);
+    Slick.init();
 }
 
 $(onLoad);
