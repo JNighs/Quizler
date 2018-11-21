@@ -546,7 +546,7 @@ const Deck = {
         });
         //On deck focus, select on Slick
         $('.js-decks-container, .js-cards-list').on('focusin', 'button', function (e) {
-            Slick.findSlideAndGoTo(e);
+            //Slick.findSlideAndGoTo(e);
         });
     },
     createDeck: function (e) {
@@ -737,8 +737,8 @@ const Slick = {
     init: function () {
         this.run(this.decks);
         this.run(this.cards);
-        Slick.bindUIActions(this.decks);
-        Slick.bindUIActions(this.cards);
+        //Slick.bindUIActions(this.decks);
+        //Slick.bindUIActions(this.cards);
     },
     bindUIActions: function ($elem) {
         $elem.on('beforeChange', function (e, slick, current, next) {
