@@ -458,10 +458,10 @@ const App = {
         frontCard: function (title, deckIndex) {
             return `
                 <h2>${title}</h2>
-                <div class="card-buttons-container">
-                    <button type="button" class="js-deck-select-button focusButton" data-index="${deckIndex}" tabindex="-1">Select</button>
-                    <button type="button" class="js-deck-edit-button" data-index="${deckIndex}" tabindex="-1">Edit</button>
-                    <button type="button" class="js-deck-delete-button" data-index="${deckIndex}" tabindex="-1">Delete</button>
+                <div class="card-buttons-container" hidden>
+                    <button type="button" class="js-deck-select-button focusButton" data-index="${deckIndex}">Select</button>
+                    <button type="button" class="js-deck-edit-button" data-index="${deckIndex}">Edit</button>
+                    <button type="button" class="js-deck-delete-button" data-index="${deckIndex}">Delete</button>
                 </div>
             `;
         },
@@ -478,7 +478,7 @@ const App = {
                         <div class="flipper">
                             <div class="front">
                                 <h3>${card.question}</h3>
-                                <div class="card-buttons-container">    
+                                <div class="card-buttons-container" hidden>    
                                     <button type="button" class="js-card-flip focusButton">Flip</button>
                                     <button type="button" class="js-card-edit-question-button" data-index="${index}">Edit</button>
                                     <button type="button" class="js-card-delete-button" data-index="${index}">Delete</button>
@@ -486,7 +486,7 @@ const App = {
                             </div>
                             <div class="back">
                                 <h3>${card.answer}</h3>
-                                <div class="card-buttons-container">
+                                <div class="card-buttons-container" hidden>
                                     <button type="button" class="js-card-flip" tabindex="-1">Flip</button>
                                     <button type="button" class="js-card-edit-answer-button" data-index="${index}" tabindex="-1">Edit</button>
                                     <button type="button" class="js-card-delete-button" data-index="${index}" tabindex="-1">Delete</button>
@@ -641,9 +641,14 @@ const Deck = {
         const $this = $(e.currentTarget);
         const $buttons = $this.parent().children();
         const $otherSideButtons = $this.parent().parent().siblings().children().children();
+        //tabindex
         App.toggleTabindex($buttons);
         App.toggleTabindex($otherSideButtons);
+        //Flip card
         $this.closest('.flipper').toggleClass("flip");
+        //Focus on first button
+        $otherSideButtons.first().addClass('focusButton').focus();
+        $buttons.first().removeClass('focusButton');
     },
 }
 
@@ -738,18 +743,18 @@ const Slick = {
         this.run(this.decks);
         this.run(this.cards);
         Slick.bindUIActions(this.decks);
-        //Slick.bindUIActions(this.cards);
+        Slick.bindUIActions(this.cards);
     },
     bindUIActions: function ($elem) {
         $elem.on('beforeChange', function (e, slick, current, next) {
             if (current !== next) {
-                const $current = $(slick.$slides[current]).find('.card-buttons-container button');
-                const $next = $(slick.$slides[next]).find('.card-buttons-container button');
-                App.toggleTabindex($current);
-                App.toggleTabindex($next);
+                const $current = $(slick.$slides[current]).find('.card-buttons-container');
+                const $next = $(slick.$slides[next]).find('.card-buttons-container');
+                $current.hide();
+                $next.show();
             }
         });
-        $elem.on('afterChange', function (e, slick, slide){
+        $elem.on('afterChange', function (e, slick, slide) {
             $(slick.$slides[slide]).find('.focusButton').focus();
         });
     },
@@ -761,13 +766,14 @@ const Slick = {
             centerMode: true,
             touchThreshold: 10,
             swipeToSlide: true,
-            focusOnSelect: true,
+            focusOnSelect: false,
         });
         //Turns on tabindexing for the first slide
         const slick = $elem.slick('getSlick');
-        const $firstSlide = $(slick.$slides[0]).find('.card-buttons-container button');
+        const $firstSlide = $(slick.$slides[0]).find('.card-buttons-container');
         if ($firstSlide) {
-            App.toggleTabindex($firstSlide);
+
+            $firstSlide.show();
         }
     },
     destroy: function ($elem) {
