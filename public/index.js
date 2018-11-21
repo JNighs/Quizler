@@ -459,9 +459,9 @@ const App = {
             return `
                 <h2>${title}</h2>
                 <div class="card-buttons-container">
-                    <button type="button" class="js-deck-select-button focusButton" data-index="${deckIndex}">Select</button>
-                    <button type="button" class="js-deck-edit-button" data-index="${deckIndex}">Edit</button>
-                    <button type="button" class="js-deck-delete-button" data-index="${deckIndex}">Delete</button>
+                    <button type="button" class="js-deck-select-button focusButton" data-index="${deckIndex}" tabindex="-1">Select</button>
+                    <button type="button" class="js-deck-edit-button" data-index="${deckIndex}" tabindex="-1">Edit</button>
+                    <button type="button" class="js-deck-delete-button" data-index="${deckIndex}" tabindex="-1">Delete</button>
                 </div>
             `;
         },
@@ -737,20 +737,24 @@ const Slick = {
     init: function () {
         this.run(this.decks);
         this.run(this.cards);
-        //Slick.bindUIActions(this.decks);
+        Slick.bindUIActions(this.decks);
         //Slick.bindUIActions(this.cards);
     },
     bindUIActions: function ($elem) {
         $elem.on('beforeChange', function (e, slick, current, next) {
             if (current !== next) {
-                const $this = $(slick.$slides[next]).find('.focusButton');
-                $this.focus();
+                const $current = $(slick.$slides[current]).find('.card-buttons-container button');
+                const $next = $(slick.$slides[next]).find('.card-buttons-container button');
+                App.toggleTabindex($current);
+                App.toggleTabindex($next);
             }
+        });
+        $elem.on('afterChange', function (e, slick, slide){
+            $(slick.$slides[slide]).find('.focusButton').focus();
         });
     },
     run: function ($elem) {
         $elem.slick({
-            //dots: true,
             speed: 300,
             infinite: false,
             variableWidth: true,
@@ -759,6 +763,12 @@ const Slick = {
             swipeToSlide: true,
             focusOnSelect: true,
         });
+        //Turns on tabindexing for the first slide
+        const slick = $elem.slick('getSlick');
+        const $firstSlide = $(slick.$slides[0]).find('.card-buttons-container button');
+        if ($firstSlide) {
+            App.toggleTabindex($firstSlide);
+        }
     },
     destroy: function ($elem) {
         $elem.slick('unslick');
