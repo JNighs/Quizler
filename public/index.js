@@ -145,7 +145,7 @@ const App = {
         $('.js-logout-button').click(e => {
             App.logout();
         });
-
+        //Button for card page > deck page
         $('.js-decks-button').click(e => {
             App.showPage('decks');
         });
@@ -298,6 +298,7 @@ const App = {
     //Go to selected Deck's cards page
     selectDeck: function (e) {
         const selected = e.currentTarget.dataset.index;
+        Slick.deckFocus = selected;
         deck.currentDeck = deck.deckList[selected];
         App.showPage('cards');
     },
@@ -373,6 +374,7 @@ const App = {
             const $deckContainer = $('.js-decks-container');
             //Reset container
             Slick.destroy(Slick.decks);
+            $deckContainer.empty();
             //Reverse so that the newest deck is at front
             deck.deckList = data.reverse();
             //Populate decks list
@@ -382,7 +384,9 @@ const App = {
                 App.render.deckCardStack($deck, deck.title, deck.cards, index);
             });
             //Run slick carousel
-            Slick.run(Slick.decks);
+            Slick.run(Slick.decks, Slick.deckFocus);
+            //Focus on last slide
+            Slick.goTo(Slick.decks, Slick.deckFocus, true);
             //Show page
             $('.js-decks-page').show();
         },
@@ -465,6 +469,7 @@ const App = {
                 </div>
             `;
         },
+        //TODO - Remove global currentDeck and replace with passed variable
         cards: function () {
             const cardList = deck.currentDeck.cards.reverse();
             const $list = $('.js-cards-list');
@@ -544,10 +549,6 @@ const Deck = {
         $('.js-cards-list').on("click", ".js-card-delete-button", function (e) {
             Deck.deleteCard(e);
         });
-        //On deck focus, select on Slick
-        $('.js-decks-container, .js-cards-list').on('focusin', 'button', function (e) {
-            //Slick.findSlideAndGoTo(e);
-        });
     },
     createDeck: function (e) {
         const $field = $(e.currentTarget).find('.js-new-deck');
@@ -581,19 +582,9 @@ const Deck = {
         const deckID = deck.deckList[selected]._id;
         const $deckTitle = $(e.currentTarget).parent().siblings('h2');
         const currentTitle = $deckTitle.text();
-
-        //Make title editable text, focus it
-        $deckTitle.prop('contentEditable', true).focus()
-            //On deselecting text, write new name into database
-            .on('blur', function () {
-                const newTitle = $deckTitle.text().trim();
-                if (newTitle !== currentTitle) {
-                    Ajax.updateDeck(deckID, newTitle);
-                }
-                //Reset text field value to remove whitespace
-                $deckTitle.text(newTitle);
-                $deckTitle.prop('contentEditable', false);
-            });
+        Alert.editDeck(currentTitle, deckID).then(newTitle => {
+            $deckTitle.text(newTitle);
+        });
     },
     editCard: function (e, cardSide) {
         const index = e.currentTarget.dataset.index;
@@ -610,7 +601,6 @@ const Deck = {
             .on('blur', function () {
                 const newText = $cardText.text()
                 if (newText !== currentText) {
-                    console.log(newText);
                     Ajax.updateCard(_deck._id, _card._id, cardSide, newText)
                 }
                 $cardText.prop('contentEditable', false);
@@ -619,10 +609,19 @@ const Deck = {
 
     },
     deleteDeck: function (e) {
-        const index = e.currentTarget.dataset.index;
+        let index = e.currentTarget.dataset.index;
         const _deck = deck.deckList[index];
-        Ajax.deleteDeck(_deck._id)
-            .then(App.showPage('decks'));
+        const deckTitle = _deck.title;
+        const deckID = _deck._id;
+        Alert.deleteDeck(deckTitle, deckID)
+            .then(res => {
+                if (res.dismiss) return;
+                if(index != 0){
+                    index--;
+                }
+                Slick.deckFocus = index;
+                App.showPage('decks');
+            });
     },
     deleteCard: function (e) {
         const index = e.currentTarget.dataset.index;
@@ -739,6 +738,8 @@ const Quiz = {
 const Slick = {
     decks: $('.js-decks-container'),
     cards: $('.js-cards-list'),
+    deckFocus: 0,
+    cardFocus: 0,
     init: function () {
         this.run(this.decks);
         this.run(this.cards);
@@ -746,48 +747,96 @@ const Slick = {
         Slick.bindUIActions(this.cards);
     },
     bindUIActions: function ($elem) {
+        //Shows and hides buttons based on current slide focus
         $elem.on('beforeChange', function (e, slick, current, next) {
             if (current !== next) {
                 const $current = $(slick.$slides[current]).find('.card-buttons-container');
                 const $next = $(slick.$slides[next]).find('.card-buttons-container');
                 $current.hide();
                 $next.show();
+                $(slick.$slides[next]).find('.focusButton').focus();
             }
         });
-        $elem.on('afterChange', function (e, slick, slide) {
-            $(slick.$slides[slide]).find('.focusButton').focus();
-        });
     },
-    run: function ($elem) {
+    run: function ($elem, initSlide = 0) {
         $elem.slick({
             speed: 300,
             infinite: false,
             variableWidth: true,
+            slidestoShow: 1,
             centerMode: true,
-            touchThreshold: 10,
+            touchThreshold: 12,
             swipeToSlide: true,
-            focusOnSelect: false,
+            focusOnSelect: true,
+            initialSlide: initSlide,
         });
         //Turns on tabindexing for the first slide
         const slick = $elem.slick('getSlick');
-        const $firstSlide = $(slick.$slides[0]).find('.card-buttons-container');
+        const $firstSlide = $(slick.$slides[initSlide]).find('.card-buttons-container');
         if ($firstSlide) {
-
             $firstSlide.show();
         }
     },
     destroy: function ($elem) {
         $elem.slick('unslick');
-        $('.js-decks-container').empty();
     },
-    goTo: function ($slick, slide) {
-        $slick.slick('slickGoTo', slide);
+    goTo: function ($slick, slide, noAnimation = false) {
+        $slick.slick('slickGoTo', slide, noAnimation);
     },
-    findSlideAndGoTo: function (e) {
-        const $this = $(e.currentTarget);
-        const index = $this.closest('.slick-slide').data('slickIndex');
-        const slick = $this.closest('.slick-initialized');
-        Slick.goTo(slick, index);
+}
+
+const Alert = {
+    //custom settings
+    swalC: null,
+    init: function () {
+        //Sets default settings
+        swalC = swal.mixin({
+            confirmButtonColor: '#05668D',
+        })
+    },
+    editDeck: async function (current, deckID) {
+        let newTitle;
+        return swalC({
+            input: 'text',
+            inputValue: current,
+            title: 'Edit Deck Name',
+            showCancelButton: true,
+            showLoaderOnConfirm: true,
+            preConfirm: (text) => {
+                //If no change simply return
+                if (text === current) {
+                    return current;
+                }
+                newTitle = text;
+                return Ajax.updateDeck(deckID, newTitle)
+                    .catch(err => {
+                        swal.showValidationMessage(
+                            `Request Failed: ${err.responseJSON.message}`
+                        )
+                    })
+            },
+            allowOutsideClick: () => !swal.isLoading()
+        }).then(res => {
+            return newTitle;
+        })
+
+    },
+    deleteDeck: async function (deckTitle, deckID) {
+        return swalC({
+            title: `Delete Deck ${deckTitle}?`,
+            text: "You won't be able to revert this!",
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            preConfirm: () => {
+                return Ajax.deleteDeck(deckID)
+                    .catch(err => {
+                        swal.showValidationMessage(
+                            `Request Failed: ${err.responseJSON.message}`
+                        )
+                    });
+            },
+            allowOutsideClick: () => !swal.isLoading()
+        })
     },
 }
 
@@ -796,6 +845,7 @@ function onLoad() {
     Deck.init();
     Quiz.init();
     Slick.init();
+    Alert.init();
 }
 
 $(onLoad);
