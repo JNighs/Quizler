@@ -149,14 +149,6 @@ const App = {
         $('.js-decks-button').click(e => {
             App.showPage('decks');
         });
-        //Show Create Deck form
-        $('.js-toggle-create-deck-form').click(e => {
-            App.showForm('deck', 'toggle');
-        });
-        //Show Create Card form
-        $('.js-toggle-create-card-form').click(e => {
-            App.showForm('card', 'toggle');
-        });
         //Select deck and view its cards
         $('.js-decks-container').on("click", ".js-deck-select-button", function (e) {
             App.selectDeck(e);
@@ -169,6 +161,21 @@ const App = {
         //Flip card over
         $('.js-cards-list').on("click", ".js-card-flip", function (e) {
             Deck.flipCard(e);
+        });
+        //Binds arrow keys for easy carousel movement
+        $(document).keydown(function (e) {
+            if (!$(e.target).is('input') && Slick.active) {
+                switch (e.which) {
+                    case 37: // left
+                        Slick.prev();
+                        break;
+                    case 39: // right
+                        Slick.next();
+                        break;
+                    default: return; // exit this handler for other keys
+                }
+                e.preventDefault();
+            }
         });
     },
     routeAccountForm: function (e) {
@@ -360,6 +367,7 @@ const App = {
                     App.showForm('deck', 'off');
                     $('.js-logout-button').show();
                     Ajax.deckList().then(App.render.decks);
+                    Slick.active = Slick.decks;
                     break;
                 case 'cards':
                     App.showForm('card', 'off');
@@ -367,6 +375,7 @@ const App = {
                         $('.js-start-quiz-button').hide();
                     } else { $('.js-start-quiz-button').show(); }
                     App.render.cards();
+                    Slick.active = Slick.cards;
                     break;
             }
         },
@@ -504,6 +513,7 @@ const App = {
             }
 
             Slick.run(Slick.cards);
+            Slick.goTo(Slick.cards, Slick.cardFocus, true);
         }
     },
 };
@@ -520,9 +530,12 @@ const Deck = {
     },
     bindUIActions: function () {
         //Create new deck
-        $('.js-deck-form').submit(e => {
-            e.preventDefault();
-            Deck.createDeck(e);
+        $('.js-toggle-create-deck-form').click(e => {
+            Alert.createDeck();
+        });
+        //Show Create Card form
+        $('.js-toggle-create-card-form').click(e => {
+            Alert.createCard(deck.currentDeck._id);
         });
         //Create new card
         $('.js-card-form').submit(e => {
@@ -535,11 +548,11 @@ const Deck = {
         });
         //Edit card question
         $('.js-cards-list').on("click", ".js-card-edit-question-button", function (e) {
-            Deck.editCard(e, "question");
+            Deck.editCard(e, "Question");
         });
         //Edit card answer
         $('.js-cards-list').on("click", ".js-card-edit-answer-button", function (e) {
-            Deck.editCard(e, "answer");
+            Deck.editCard(e, "Answer");
         });
         //Delete deck
         $('.js-decks-container').on("click", ".js-deck-delete-button", function (e) {
@@ -583,7 +596,10 @@ const Deck = {
         const $deckTitle = $(e.currentTarget).parent().siblings('h2');
         const currentTitle = $deckTitle.text();
         Alert.editDeck(currentTitle, deckID).then(newTitle => {
+            if (!newTitle) return;
+            //Update frontend data with new title so save a backend request
             $deckTitle.text(newTitle);
+            deck.deckList[selected].title = newTitle;
         });
     },
     editCard: function (e, cardSide) {
@@ -592,21 +608,17 @@ const Deck = {
         const _card = _deck.cards[index];
         const $cardText = $(e.currentTarget).parent().siblings('h3');
         let currentText;
-        if (cardSide === "question") {
+        if (cardSide === "Question") {
             currentText = _card.question;
         } else { currentText = _card.answer };
-
-        $cardText.prop('contentEditable', true).focus()
-            //On deselecting text, write new name into database
-            .on('blur', function () {
-                const newText = $cardText.text()
-                if (newText !== currentText) {
-                    Ajax.updateCard(_deck._id, _card._id, cardSide, newText)
-                }
-                $cardText.prop('contentEditable', false);
-            });
-
-
+        Alert.editCard(_deck._id, _card._id, cardSide, currentText).then(newText => {
+            if (!newText) return;
+            //Update frontend data to save a backend request
+            $cardText.text(newText);
+            if (cardSide === 'Question') {
+                _card.question = newText;
+            } else { _card.answer = newText; }
+        })
     },
     deleteDeck: function (e) {
         let index = e.currentTarget.dataset.index;
@@ -616,7 +628,7 @@ const Deck = {
         Alert.deleteDeck(deckTitle, deckID)
             .then(res => {
                 if (res.dismiss) return;
-                if(index != 0){
+                if (index != 0) {
                     index--;
                 }
                 Slick.deckFocus = index;
@@ -624,17 +636,24 @@ const Deck = {
             });
     },
     deleteCard: function (e) {
-        const index = e.currentTarget.dataset.index;
+        let index = e.currentTarget.dataset.index;
         const _deck = deck.currentDeck;
-        const _card = _deck.cards[index];
-        Ajax.deleteCard(_deck._id, _card._id)
-            .then(() => {
-                return Ajax.deckByID(_deck._id);
+        const cardID = _deck.cards[index]._id;
+        const deckID = _deck._id;
+        Alert.deleteCard(deckID, cardID)
+            .then(res => {
+                if (res.dismiss) return res;
+                if (index != 0) {
+                    index--;
+                }
+                Slick.cardFocus = index;
+                return Ajax.deckByID(deckID);
             })
-            .then(updatedDeck => {
-                deck.currentDeck = updatedDeck;
+            .then(res => {
+                if (res.dismiss) return res;
+                deck.currentDeck = res;
                 App.showPage('cards');
-            });
+            })
     },
     flipCard: function (e) {
         const $this = $(e.currentTarget);
@@ -738,6 +757,7 @@ const Quiz = {
 const Slick = {
     decks: $('.js-decks-container'),
     cards: $('.js-cards-list'),
+    active: null,
     deckFocus: 0,
     cardFocus: 0,
     init: function () {
@@ -782,6 +802,12 @@ const Slick = {
     goTo: function ($slick, slide, noAnimation = false) {
         $slick.slick('slickGoTo', slide, noAnimation);
     },
+    next: function () {
+        Slick.active.slick('slickNext');
+    },
+    prev: function () {
+        Slick.active.slick('slickPrev');
+    }
 }
 
 const Alert = {
@@ -791,6 +817,77 @@ const Alert = {
         //Sets default settings
         swalC = swal.mixin({
             confirmButtonColor: '#05668D',
+        })
+    },
+    createDeck: async function () {
+        return swalC({
+            input: 'text',
+            title: 'Enter Deck Name',
+            showCancelButton: true,
+            showLoaderOnConfirm: true,
+            preConfirm: (text) => {
+                if (!text) {
+                    return swal.showValidationMessage(
+                        `Please enter a name.`
+                    )
+                }
+                return Ajax.createDeck(text)
+                    .catch(err => {
+                        swal.showValidationMessage(
+                            `Request Failed: ${err.responseJSON.message}`
+                        );
+                    })
+            },
+            allowOutsideClick: () => !swal.isLoading()
+        }).then(res => {
+            if (res.value) {
+                App.showPage('decks');
+            }
+        })
+    },
+    createCard: async function (deckID) {
+        return swalC.mixin({
+            input: 'textarea',
+            showCancelButton: true,
+            confirmButtonText: 'Submit',
+            progressSteps: ['1', '2'],
+            preConfirm: (text) => {
+                if (!text) {
+                    return swal.showValidationMessage(
+                        `Please enter in some text.`
+                    )
+                }
+            }
+        }).queue([
+            'Enter Question',
+            'Enter Answer'
+        ]).then(res => {
+            if (res.value) {
+                swalC({
+                    title: 'Please Wait..!',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                    onOpen: () => {
+                        swal.showLoading()
+                    }
+                })
+                const question = res.value[0];
+                const answer = res.value[1];
+                return Ajax.createCard(deckID, question, answer)
+                    .catch(err => {
+                        swal.showValidationMessage(
+                            `Request Failed: ${err.responseJSON.message}`
+                        );
+                    })
+            }
+        }).then(res => {
+            swal.close();
+            //Retrieve updated deck
+            return Ajax.deckByID(deckID);
+        }).then(res => {
+            deck.currentDeck = res;
+            App.showPage('cards');
         })
     },
     editDeck: async function (current, deckID) {
@@ -822,7 +919,7 @@ const Alert = {
     },
     deleteDeck: async function (deckTitle, deckID) {
         return swalC({
-            title: `Delete Deck ${deckTitle}?`,
+            title: `Delete "${deckTitle}"?`,
             text: "You won't be able to revert this!",
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
@@ -837,6 +934,48 @@ const Alert = {
             allowOutsideClick: () => !swal.isLoading()
         })
     },
+    editCard: async function (deckID, cardID, cardSide, current) {
+        let newText;
+        return swalC({
+            input: 'textarea',
+            inputValue: current,
+            title: `Edit Card ${cardSide}`,
+            showCancelButton: true,
+            showLoaderOnConfirm: true,
+            preConfirm: (text) => {
+                if (text === current) {
+                    return current;
+                }
+                newText = text;
+                return Ajax.updateCard(deckID, cardID, cardSide, newText)
+                    .catch(err => {
+                        swal.showValidationMessage(
+                            `Request Failed: ${err.responseJSON.message}`
+                        )
+                    })
+            },
+            allowOutsideClick: () => !swal.isLoading()
+        }).then(res => {
+            return newText;
+        })
+    },
+    deleteCard: async function (deckID, cardID) {
+        return swalC({
+            title: 'Delete Card?',
+            text: "You won't be able to revert this!",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it!",
+            preConfirm: () => {
+                return Ajax.deleteCard(deckID, cardID)
+                    .catch(err => {
+                        swal.showValidationMessage(
+                            `Request Failed: ${err.responseJSON.message}`
+                        )
+                    });
+            },
+            allowOutsideClick: () => !swal.isLoading()
+        })
+    }
 }
 
 function onLoad() {

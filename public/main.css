@@ -225,6 +225,11 @@ fieldset {
     z-index: auto;
 }
 
+.front, .back {
+    width: 250px;
+    height: 300px;
+}
+
 .card-buttons-container{
     position: absolute;
     bottom: 10px;
@@ -235,7 +240,7 @@ fieldset {
 .card-buttons-container button {
     display: block;
     width: 75%;
-    height: 20px;
+    height: 25px;
     margin: 5px auto;
 }
 
@@ -254,7 +259,7 @@ fieldset {
 
 .js-card-container {
     perspective: 1000px;
-    height: 300px;
+    height: 325px;
 }
 
 .js-card-container, .front, .back {
@@ -313,7 +318,8 @@ fieldset {
 .slick-next, .slick-prev {
     width: 40px;
     height: 40px;
-    top: 325px;
+    top: auto;
+    bottom: -20%;
 }
 
 .slick-next {
@@ -324,5 +330,6 @@ fieldset {
     left: 0;
 }
 
-/*      Media Queries        */
-
+.js-decks-button {
+    margin-top: 60px;
+}
