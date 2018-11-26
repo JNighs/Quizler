@@ -6,7 +6,8 @@ body * {
 body {
     text-align: center;
     background: #faffed;
-    
+    margin: 0;   
+    padding: 0;
 }
 
 h2, h3 {
@@ -312,13 +313,16 @@ fieldset {
 .slick-next, .slick-prev {
     width: 40px;
     height: 40px;
+    top: 325px;
 }
 
 .slick-next {
-    right: -20px;
+    right: 0;
 }
 
 .slick-prev {
-    left: -40px;
-    bottom: -100px;
+    left: 0;
 }
+
+/*      Media Queries        */
+

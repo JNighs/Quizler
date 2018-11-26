@@ -393,7 +393,7 @@ const App = {
         //Renders the visual deck stack
         deckCardStack: function ($deck, title, cards, deckIndex) {
             //deckMax based on how many cards before it doesn't fit in the container
-            const deckMax = 48;
+            const deckMax = 40;
             let deckLength = cards.length;
             let deckThickness;
 
@@ -754,7 +754,7 @@ const Slick = {
                 const $next = $(slick.$slides[next]).find('.card-buttons-container');
                 $current.hide();
                 $next.show();
-                $(slick.$slides[next]).find('.focusButton').focus();
+                //$(slick.$slides[next]).find('.focusButton');
             }
         });
     },
@@ -763,7 +763,6 @@ const Slick = {
             speed: 300,
             infinite: false,
             variableWidth: true,
-            slidestoShow: 1,
             centerMode: true,
             touchThreshold: 12,
             swipeToSlide: true,
