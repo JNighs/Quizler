@@ -1,4 +1,4 @@
-let s, deck, user, quiz;
+let deck, user, quiz;
 
 const Ajax = {
     setHeader: function () {
@@ -300,6 +300,8 @@ const App = {
     logout: function () {
         localStorage.clear();
         Slick.destroy(Slick.decks);
+        Slick.destroy(Slick.cards);
+        Slick.decks.empty();
         App.showPage('login');
     },
     //Go to selected Deck's cards page
@@ -563,32 +565,11 @@ const Deck = {
             Deck.deleteCard(e);
         });
     },
-    createDeck: function (e) {
-        const $field = $(e.currentTarget).find('.js-new-deck');
-        //Create deck then reload decks page
-        Ajax.createDeck($field.val())
-            .then(() => {
-                $field.val("");
-                App.showPage('decks');
-            });
+    createDeck: function () {
+        
     },
-    createCard: function (e) {
-        const $this = $(e.currentTarget);
-        const $question = $this.find('.js-new-card-question');
-        const $answer = $this.find('.js-new-card-answer');
-        //Add card to deck then reload cards page
-        Ajax.createCard(deck.currentDeck._id, $question.val(), $answer.val())
-            .then(() => {
-                //Retrieve updated deck
-                return Ajax.deckByID(deck.currentDeck._id);
-            })
-            .then((data) => {
-                //Show updated cards
-                deck.currentDeck = data;
-                $question.val('');
-                $answer.val('');
-                App.showPage('cards');
-            });
+    createCard: function () {
+        
     },
     editDeck: function (e) {
         const selected = e.currentTarget.dataset.index;
@@ -862,6 +843,7 @@ const Alert = {
             'Enter Question',
             'Enter Answer'
         ]).then(res => {
+            if (res.dismiss) return res;
             if (res.value) {
                 swalC({
                     title: 'Please Wait..!',
@@ -882,10 +864,12 @@ const Alert = {
                     })
             }
         }).then(res => {
+            if (res.dismiss) return res;
             swal.close();
             //Retrieve updated deck
             return Ajax.deckByID(deckID);
         }).then(res => {
+            if (res.dismiss) return res;
             deck.currentDeck = res;
             App.showPage('cards');
         })
