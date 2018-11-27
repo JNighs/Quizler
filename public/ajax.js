@@ -86,7 +86,7 @@ const Ajax = {
     },
     updateCard(deckID, cardID, cardSide, newText) {
         const updateData = {
-            cardSide: cardSide,
+            cardSide: cardSide.toLowerCase(),
             text: newText
         }
         return $.ajax({

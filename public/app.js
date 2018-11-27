@@ -209,12 +209,13 @@ const App = {
                     $('.js-logout-button').show();
                     Ajax.deckList().then(App.render.decks);
                     Slick.active = Slick.decks;
+                    Slick.cardFocus = 0;
                     break;
                 case 'cards':
                     if (Deck.currentDeck.cards.length === 0) {
                         $('.js-start-quiz-button').hide();
                     } else { $('.js-start-quiz-button').show(); }
-                    App.render.cards();
+                    App.render.cardList();
                     Slick.active = Slick.cards;
                     break;
             }
@@ -319,7 +320,7 @@ const App = {
             `;
         },
         //TODO - Remove global currentDeck and replace with passed variable
-        cards: function () {
+        cardList: function () {
             const cardList = Deck.currentDeck.cards.reverse();
             const $list = $('.js-cards-list');
             //Reset container
@@ -327,34 +328,65 @@ const App = {
             $list.empty();
             if (!cardList.empty) {
                 cardList.forEach((card, index) => {
-                    $list.append(`
-                    <div class="js-card-container">
-                        <div class="flipper">
-                            <div class="front">
-                                <h3>${card.question}</h3>
-                                <div class="card-buttons-container" hidden>    
-                                    <button type="button" class="js-card-flip focusButton">Flip</button>
-                                    <button type="button" class="js-card-edit-question-button" data-index="${index}">Edit</button>
-                                    <button type="button" class="js-card-delete-button" data-index="${index}">Delete</button>
-                                </div>
-                            </div>
-                            <div class="back">
-                                <h3>${card.answer}</h3>
-                                <div class="card-buttons-container" hidden>
-                                    <button type="button" class="js-card-flip" tabindex="-1">Flip</button>
-                                    <button type="button" class="js-card-edit-answer-button" data-index="${index}" tabindex="-1">Edit</button>
-                                    <button type="button" class="js-card-delete-button" data-index="${index}" tabindex="-1">Delete</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                        `);
+                    const html = App.render.card(card.question, card.answer, index);
+                    $list.append(html);
                 });
             }
 
             Slick.run(Slick.cards);
             Slick.goTo(Slick.cards, Slick.cardFocus, true);
         },
-        
+        card: function (question, answer, index) {
+            const $container = $('<div class="js-card-container"></div>');
+            const $question = $(`<h3>${question}</h3>`);
+            const $answer = $(`<h3>${answer}</h3>`);
+            const qSize = App.render.strToFontSize(question);
+            const aSize = App.render.strToFontSize(answer);
+
+            $question.css('font-size', qSize);
+            $answer.css('font-size', aSize);
+
+            const card = `
+            <div class="flipper">
+                <div class="front">
+                    ${$question.prop('outerHTML')}
+                    <div class="card-buttons-container" hidden>    
+                        <button type="button" class="js-card-flip focusButton">Flip</button>
+                        <button type="button" class="js-card-edit-question-button" data-index="${index}">Edit</button>
+                        <button type="button" class="js-card-delete-button" data-index="${index}">Delete</button>
+                    </div>
+                </div>
+                <div class="back">
+                    ${$answer.prop('outerHTML')}
+                    <div class="card-buttons-container" hidden>
+                        <button type="button" class="js-card-flip" tabindex="-1">Flip</button>
+                        <button type="button" class="js-card-edit-answer-button" data-index="${index}" tabindex="-1">Edit</button>
+                        <button type="button" class="js-card-delete-button" data-index="${index}" tabindex="-1">Delete</button>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            $container.append(card);
+            return $container;
+        },
+        strToFontSize: function (str) {
+            const strLength = str.split(" ").length;
+            if ((strLength >= 1) && (strLength < 10)) {
+                return '24px';
+            }
+            else if ((strLength >= 10) && (strLength < 20)) {
+                return '18px';
+            }
+            else if ((strLength >= 20) && (strLength < 30)) {
+                return '16px';
+            }
+            else if ((strLength >= 30) && (strLength < 40)) {
+                return '14px';
+            }
+            else {
+                return '12px';
+            }
+        },
     },
 };

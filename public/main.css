@@ -307,6 +307,10 @@ fieldset {
     color: #131515;
 }
 
+.js-card-container h3 {
+    font-size: 12pt;
+}
+
 .js-start-quiz-button, .js-decks-button {
     margin-bottom: 10px;
 }

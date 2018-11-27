@@ -70,6 +70,8 @@ const Deck = {
         Alert.editCard(_deck._id, _card._id, cardSide, currentText).then(newText => {
             if (!newText) return;
             //Update frontend data to save a backend request
+            const fontSize = App.render.strToFontSize(newText);
+            $cardText.css('font-size', fontSize);
             $cardText.text(newText);
             if (cardSide === 'Question') {
                 _card.question = newText;
