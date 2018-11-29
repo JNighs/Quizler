@@ -287,7 +287,8 @@ fieldset {
     -webkit-backface-visibility: hidden;
 	position: absolute;
 	top: 0;
-	left: 0;
+    left: 0;
+    transition: box-shadow 100ms;
 }
 
 /* front pane, placed above back */
@@ -336,4 +337,32 @@ fieldset {
 
 .js-decks-button {
     margin-top: 60px;
+}
+
+/*      Quiz page       */
+.js-quiz-page .js-card-container {
+    width: auto;
+    user-select: none;
+    padding-top: 50px;
+    height: 450px;
+}
+
+.quiz-card {
+    height: 0;
+}
+
+.blank-card {
+    font-size: 0 !important;
+}
+
+.score, .percent {
+    color: #05668D;
+}
+
+.text-highlight {
+    color: #00A896;
+}
+
+.js-score-container {
+    margin-bottom: 10px;
 }

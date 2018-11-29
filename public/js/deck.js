@@ -1,7 +1,6 @@
 const Deck = {
     deckList: null,
-    currentDeck: null,
-    currentCard: null,
+    active: null,
     init: function () {
         this.bindUIActions();
     },
@@ -12,7 +11,7 @@ const Deck = {
         });
         //Show Create Card form
         $('.js-toggle-create-card-form').click(e => {
-            Alert.createCard(Deck.currentDeck._id);
+            Alert.createCard(Deck.active._id);
         });
         //Create new card
         $('.js-card-form').submit(e => {
@@ -40,12 +39,6 @@ const Deck = {
             Deck.deleteCard(e);
         });
     },
-    createDeck: function () {
-
-    },
-    createCard: function () {
-
-    },
     editDeck: function (e) {
         const selected = e.currentTarget.dataset.index;
         const deckID = Deck.deckList[selected]._id;
@@ -60,7 +53,7 @@ const Deck = {
     },
     editCard: function (e, cardSide) {
         const index = e.currentTarget.dataset.index;
-        const _deck = Deck.currentDeck;
+        const _deck = Deck.active;
         const _card = _deck.cards[index];
         const $cardText = $(e.currentTarget).parent().siblings('h3');
         let currentText;
@@ -95,7 +88,7 @@ const Deck = {
     },
     deleteCard: function (e) {
         let index = e.currentTarget.dataset.index;
-        const _deck = Deck.currentDeck;
+        const _deck = Deck.active;
         const cardID = _deck.cards[index]._id;
         const deckID = _deck._id;
         Alert.deleteCard(deckID, cardID)
@@ -109,7 +102,7 @@ const Deck = {
             })
             .then(res => {
                 if (res.dismiss) return res;
-                Deck.currentDeck = res;
+                Deck.active = res;
                 App.showPage('cards');
             })
     },

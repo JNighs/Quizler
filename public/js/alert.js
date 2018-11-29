@@ -73,7 +73,7 @@ const Alert = {
             //Retrieve updated deck
             return Ajax.deckByID(deckID);
         }).then(res => {
-            Deck.currentDeck = res;
+            Deck.active = res;
             App.showPage('cards');
         }).catch(err => {
             swal.close();

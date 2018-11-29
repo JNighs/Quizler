@@ -8,11 +8,12 @@ const App = {
         if (this.userLoggedIn) { this.showPage('decks'); }
     },
     bindUIActions: function () {
+        //Route account form, either login or create
         $('.js-account-form').submit(e => {
             e.preventDefault();
             App.routeAccountForm(e);
         });
-
+        //Logout
         $('.js-logout-button').click(e => {
             App.logout();
         });
@@ -33,9 +34,30 @@ const App = {
         $('.js-cards-list').on("click", ".js-card-flip", function (e) {
             Deck.flipCard(e);
         });
-        //Binds arrow keys for easy carousel movement
+        //Start quiz
+        $('.js-start-quiz-button').click(function () {
+            App.showPage('quiz');
+        });
+        //Binds keyboard
         $(document).keydown(function (e) {
-            if (!$(e.target).is('input') && Slick.active) {
+            //If quiz is active
+            if (Quiz.deck !== null) {
+                switch (e.which) {
+                    case 37: // left
+                        Quiz.cardSlide(false, 500);
+                        break;
+                    case 39: // right
+                        Quiz.cardSlide(true, 500);
+                        break;
+                    case 32: // space
+                        Quiz.flipCard();
+                        break;
+                    default: return; // exit this handler for other keys
+                }
+                e.preventDefault();
+            }
+            //If carousel active
+            else if (!$(e.target).is('input') && Slick.active) {
                 switch (e.which) {
                     case 37: // left
                         Slick.prev();
@@ -179,7 +201,7 @@ const App = {
     selectDeck: function (e) {
         const selected = e.currentTarget.dataset.index;
         Slick.deckFocus = selected;
-        Deck.currentDeck = Deck.deckList[selected];
+        Deck.active = Deck.deckList[selected];
         App.showPage('cards');
     },
     //Toggle tabindex for an element
@@ -203,6 +225,7 @@ const App = {
             switch (inputPage) {
                 case 'login':
                     $('.js-logout-button').hide();
+                    $('.js-reset-button').hide();
                     App.removeAccountError();
                     break;
                 case 'decks':
@@ -212,11 +235,16 @@ const App = {
                     Slick.cardFocus = 0;
                     break;
                 case 'cards':
-                    if (Deck.currentDeck.cards.length === 0) {
+                    if (Deck.active.cards.length === 0) {
                         $('.js-start-quiz-button').hide();
                     } else { $('.js-start-quiz-button').show(); }
+                    $('.js-reset-button').hide();
                     App.render.cardList();
                     Slick.active = Slick.cards;
+                    break;
+                case 'quiz':
+                    Quiz.startQuiz();
+                    $('.js-reset-button').show();
                     break;
             }
         },
@@ -319,9 +347,9 @@ const App = {
                 </div>
             `;
         },
-        //TODO - Remove global currentDeck and replace with passed variable
+        //TODO - Remove global active and replace with passed variable
         cardList: function () {
-            const cardList = Deck.currentDeck.cards.reverse();
+            const cardList = Deck.active.cards.reverse();
             const $list = $('.js-cards-list');
             //Reset container
             Slick.destroy(Slick.cards);
@@ -336,17 +364,25 @@ const App = {
             Slick.run(Slick.cards);
             Slick.goTo(Slick.cards, Slick.cardFocus, true);
         },
-        card: function (question, answer, index) {
+        card: function (question, answer, index, forQuiz) {
             const $container = $('<div class="js-card-container"></div>');
             const $question = $(`<h3>${question}</h3>`);
             const $answer = $(`<h3>${answer}</h3>`);
+            //Calculate font size based on string length and modify css
             const qSize = App.render.strToFontSize(question);
             const aSize = App.render.strToFontSize(answer);
-
             $question.css('font-size', qSize);
             $answer.css('font-size', aSize);
+            //Render card whether it's for the card page or quiz
+            let card;
+            if (!forQuiz) { card = App.render.cardForSlick($question, $answer, index); }
+            else { card = App.render.cardForQuiz($question, $answer); }
 
-            const card = `
+            $container.append(card);
+            return $container;
+        },
+        cardForSlick: function ($question, $answer, index) {
+            return `
             <div class="flipper">
                 <div class="front">
                     ${$question.prop('outerHTML')}
@@ -366,9 +402,18 @@ const App = {
                 </div>
             </div>
             `;
-            
-            $container.append(card);
-            return $container;
+        },
+        cardForQuiz: function ($question, $answer) {
+            return `
+            <div class="flipper">
+                <div class="front quiz-card">
+                    ${$question.prop('outerHTML')}
+                </div>
+                <div class="back quiz-card">
+                    ${$answer.prop('outerHTML')}
+                </div>
+            </div>
+            `
         },
         strToFontSize: function (str) {
             const strLength = str.split(" ").length;
