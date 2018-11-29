@@ -30,7 +30,9 @@ const Quiz = {
             Quiz.duringDrag(e);
         });
         $('.js-quiz-page').on("pointerup", ".front, .back", function (e) {
-            Quiz.endDrag(e);
+            if (Quiz.dragging) {
+                Quiz.endDrag(e);
+            } else {Quiz.flipCard();}
         });
     },
     startQuiz: function () {
