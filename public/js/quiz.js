@@ -24,13 +24,16 @@ const Quiz = {
         });
         //Dragging
         $('.js-quiz-page').on("pointerdown", ".front, .back", function (e) {
-            Quiz.startDrag(e);
+            if (!Quiz.animated) {
+                Quiz.startDrag(e);
+            }
         });
         $('.js-quiz-page').on("pointermove", ".front, .back", function (e) {
             Quiz.duringDrag(e);
         });
         $('.js-quiz-page').on("pointerup", ".front, .back", function (e) {
             Quiz.endDrag(e);
+            //Fix that lets you flip the card on mobile touch screen
             if (!Quiz.dragging) { Quiz.flipCard(); }
         });
     },
