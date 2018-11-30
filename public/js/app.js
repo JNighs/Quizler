@@ -189,7 +189,6 @@ const App = {
         const password = $this.find('.js-account-password').val();
         App.login(username, password);
     },
-
     logout: function () {
         localStorage.clear();
         Slick.destroy(Slick.decks);
