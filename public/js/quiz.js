@@ -8,6 +8,7 @@ const Quiz = {
     deck: null,
     $flipper: null,
     animated: false,
+    directions: true,
     init: function () {
         this.bindUIActions();
     },
@@ -38,8 +39,11 @@ const Quiz = {
         });
     },
     startQuiz: function () {
-        $('.quiz-directions').show();
-        Alert.quizDirections();
+        //Show directions but only once
+        if (Quiz.directions){
+            Alert.quizDirections();
+            Quiz.directions = false;
+        }
         $('.js-reset-button').show();
         Quiz.deck = Quiz.shuffleDeck(Deck.active.cards);
         Quiz.renderCard();

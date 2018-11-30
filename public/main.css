@@ -255,6 +255,10 @@ fieldset {
     outline: none;
 }
 
+.js-deck-delete-button:focus, .js-card-delete-button:focus {
+    background-color: #992E47;
+}
+
 /*      Card List      */
 
 .js-card-container {
