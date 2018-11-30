@@ -40,7 +40,7 @@ const Quiz = {
     },
     startQuiz: function () {
         //Show directions but only once
-        if (Quiz.directions){
+        if (Quiz.directions) {
             Alert.quizDirections();
             Quiz.directions = false;
         }
@@ -104,7 +104,10 @@ const Quiz = {
             const delta = currentX - Quiz.originX;
             const rotate = delta * 0.2;
             const element = e.currentTarget;
-            if (Math.abs(delta) < 5) {return}
+
+            //This allows some buffer to read the input as a tap rather than a swipe
+            if (Math.abs(delta) < 5 && !Quiz.dragging) { return }
+            
             Quiz.dragging = true;
 
             if ($(element).hasClass('front')) {
