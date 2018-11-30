@@ -104,6 +104,7 @@ const Quiz = {
             const delta = currentX - Quiz.originX;
             const rotate = delta * 0.2;
             const element = e.currentTarget;
+            if (Math.abs(delta) < 5) {return}
             Quiz.dragging = true;
 
             if ($(element).hasClass('front')) {
