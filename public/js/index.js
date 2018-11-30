@@ -1,3 +1,4 @@
+//Run initializations for all scripts
 function onLoad() {
     App.init();
     Deck.init();
