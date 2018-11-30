@@ -38,6 +38,10 @@ button {
     font-size: 16px;
 }
 
+button::-moz-focus-inner {
+    border: 0;
+}
+
 button:focus {
     background-color: #055474;
 }
@@ -365,6 +369,10 @@ fieldset {
 
 .text-highlight {
     color: #00A896;
+}
+
+.text-red {
+    color: #992E47;
 }
 
 .js-score-container {
