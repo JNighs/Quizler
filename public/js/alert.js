@@ -164,5 +164,8 @@ const Alert = {
             },
             allowOutsideClick: () => !swal.isLoading()
         })
+    },
+    quizDirections: function (){
+        swalC('Tap to flip card. <br>Swipe right if correct, <br>left if incorrect.');
     }
 }

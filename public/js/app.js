@@ -244,7 +244,6 @@ const App = {
                     break;
                 case 'quiz':
                     Quiz.startQuiz();
-                    $('.js-reset-button').show();
                     break;
             }
         },

@@ -259,7 +259,7 @@ fieldset {
 
 .js-card-container {
     perspective: 1000px;
-    height: 325px;
+    height: 340px;
 }
 
 .js-card-container, .front, .back {
@@ -280,7 +280,7 @@ fieldset {
 
 /* hide back of pane during swap */
 .front, .back {
-    padding: 10px;
+    padding: 20px 10px 10px 10px;
     margin: 15px auto 0;
     box-shadow: 3px 3px #026976;
     backface-visibility: hidden;
@@ -355,7 +355,7 @@ fieldset {
     font-size: 0 !important;
 }
 
-.score, .percent {
+.score, .percent, .quiz-directions {
     color: #05668D;
 }
 

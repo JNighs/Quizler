@@ -38,6 +38,8 @@ const Quiz = {
         });
     },
     startQuiz: function () {
+        $('.quiz-directions').show();
+        Alert.quizDirections();
         $('.js-reset-button').show();
         Quiz.deck = Quiz.shuffleDeck(Deck.active.cards);
         Quiz.renderCard();
