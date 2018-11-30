@@ -8,6 +8,6 @@ deploy:
   provider: heroku
   api_key:
     secure: DacEialioK+T1F79hvf/Q64dZRH2okLpmrqxm4dkXaRRpL5R23cVwGyAfQTtc9LJhS+y7tsMPh4LpBNUMtBwKnvm1aTv+FakMlKWFK8Qxvob0tp/XTN4T4Enr/+Z/WXc/+7YLtwdbE8MwxNLezZpomaC6QhFF9RQYX4OFUTNybmzdwc6hA83p7QO25KF/n55ZPZUqbJooAvo/AKT0BAZuoqGhxTlVdedeAhp83J+tnk+S6uVDLz+lspdy9nAb+g7CRKL2Ala2TL+jR+oHEdAI0izqgiktjzfwdszdE+XIce6eB20ctX13mLe6weTrH5SPEs/PcOIo/yNrZRQ1rcqi2W8xINKIA0nSCeGokmaldUDzAgbZO0iGdeWJ+MdSuhIQRXhPMl6akb82o64D2jpDCjG3cGhYXNGIVh+orxbMAxplzGE4MsCskW3838+sIWDGUW96IDs8Dpo1TUlifJExyLekp3UI4SEoGyd7STl0pT/XP4+euZiPeauqfafNtf6frnuol7FESR5EasSnXPSp16wKEOjMei+ZJ1SauCvs9hopLJbA7GAfqz5b4iAgKbIu/v6+DQMJo8p2NCk2cPQ3/j31VoIee+fO87gBb+Ag4TTjCoYf5DRdd6SBhdAmJQ8xlM2kbWMW2opxPElfEPQrS0bOuitgROYdmoCNL5XnCw=
-  app: jnighs-node-capstone
+  app: jnighs-quizler
   on:
-    repo: JNighs/node-capstone
+    repo: JNighs/Quizler
