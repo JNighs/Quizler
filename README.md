@@ -37,7 +37,7 @@ Screenshots
 
 ![Decks List](https://i.imgur.com/RXeAzRu.png)
 
-![Cards List](readme_images/mobile_3.png)
+![Cards List](https://i.imgur.com/1g0CdzZ.png)
 
 ![Quiz Page](https://i.imgur.com/xt2aAph.png)
 
