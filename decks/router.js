@@ -53,7 +53,6 @@ router.post("/", jwtAuth, (req, res) => {
 });
 //Create card
 router.post("/:id", jwtAuth, (req, res) => {
-    //TODO - Verify there's a question and answer in the res.body
     const update = {};
     update['$push'] = { "cards": req.body };
     Deck.findByIdAndUpdate(req.params.id, update)
@@ -69,7 +68,7 @@ router.put("/:id", jwtAuth, (req, res) => {
         console.error(message);
         return res.status(400).json({ message: message });
     }
-    //TODO - verify there's a title in the res.body
+    
     const update = {};
     if ('title' in req.body) {
         update['$set'] = { "title": req.body.title };

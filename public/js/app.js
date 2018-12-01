@@ -4,7 +4,6 @@ const App = {
         user = this.userSettings;
         this.bindUIActions();
         this.loginCheck();
-        //TODO - Clean up login logic
         if (this.userLoggedIn) { this.showPage('decks'); }
     },
     bindUIActions: function () {
@@ -176,7 +175,6 @@ const App = {
     login: function (username, password) {
         Ajax.login(username, password)
             .then(data => {
-                //TODO - Clean up login logic
                 localStorage.token = data.authToken;
                 App.loginCheck();
                 App.showPage('decks');
@@ -345,7 +343,6 @@ const App = {
                 </div>
             `;
         },
-        //TODO - Remove global active and replace with passed variable
         cardList: function () {
             const cardList = Deck.active.cards.reverse();
             const $list = $('.js-cards-list');

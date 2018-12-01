@@ -107,7 +107,7 @@ const Quiz = {
 
             //This allows some buffer to read the input as a tap rather than a swipe
             if (Math.abs(delta) < 5 && !Quiz.dragging) { return }
-            
+
             Quiz.dragging = true;
 
             if ($(element).hasClass('front')) {
@@ -152,6 +152,8 @@ const Quiz = {
     },
     //Animate the card pushing off to left or right depending on correct answer
     cardSlide: function (isCorrect, distance = 300) {
+        if (Quiz.animated) { return };
+
         const $card = $flipper.children();
         const waitFor = $card.length;
         let i = 0;
@@ -226,7 +228,8 @@ const Quiz = {
     //Send backend call to save card's value (amount user has gotten it correct or not)
     changeCardScore: function (increase) {
         const deckID = Deck.active._id;
-        const cardID = Deck.active.cards[Quiz.index]._id;
+        const cardID = Quiz.deck[Quiz.index]._id;
+
         if (increase) {
             Quiz.score++;
             Ajax.updateCardValue(deckID, cardID, true);

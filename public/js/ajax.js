@@ -71,7 +71,6 @@ const Ajax = {
             contentType: 'application/json'
         });
     },
-    //TODO - Organize PUT request
     updateDeck(_id, _title) {
         const updateData = JSON.stringify({
             id: _id,
